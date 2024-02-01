@@ -1,0 +1,9 @@
+LIBRARY OMSIBulbToys.dll
+
+EXPORTS
+PluginStart
+AccessSystemVariable
+AccessStringVariable
+AccessVariable
+AccessTrigger
+PluginFinalize

@@ -1,0 +1,21 @@
+Feel free to use whichever variables and triggers you'd like to debug
+OMSI Bulb Toys will read this file on startup and adjust accordingly
+
+[dll]
+OMSIPresence.dll
+
+[systemvarlist]
+1
+Pause
+
+[varlist]
+1
+AI
+
+[stringvarlist]
+1
+act_busstop
+
+[triggers]
+1
+bus_doorfront0
