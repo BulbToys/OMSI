@@ -1,9 +1,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "offsets.h"
+#include "omsi.h"
 
 #include "../core/bulbtoys.h"
+
+#include "../core/bulbtoys/gui.h"
 
 extern "C" __declspec(dllexport) void __stdcall PluginStart(void* aOwner);
 extern "C" __declspec(dllexport) void __stdcall AccessSystemVariable(unsigned short index, float* value, bool* write);
@@ -23,9 +25,9 @@ void __stdcall PluginStart(void* aOwner)
 {
 	const char* version = nullptr;
 
-	if (!(version = Offsets::v2_3_004::Check()) && !(version = Offsets::v2_2_032::Check()))
+	if (!(version = OMSI::v2_3_004::Check()) && !(version = OMSI::v2_2_032::Check()))
 	{
-		Error("Unknown OMSI version.");
+		Error("This version of OMSI 2 is not supported.");
 		return;
 	}
 
@@ -52,16 +54,24 @@ void __stdcall PluginStart(void* aOwner)
 static bool init = false;
 void __stdcall AccessSystemVariable(unsigned short index, float* value, bool* write)
 {
-	if (!init)
+	static bool first = false;
+	if (!first)
 	{
+		first = true;
+
 		BulbToys::SetupParams params;
 		params.instance = dll_instance;
 		params.settings_file = "OMSI_BulbToys.ini";
 		params.GetDevice = +[]()
 		{
-			return Read<IDirect3DDevice9*>(Offsets::TheDevice);
+			return Read<IDirect3DDevice9*>(OMSI::TheDevice);
 		};
 		init = BulbToys::Init(params);
+		if (init)
+		{
+			// IO doesn't work
+			new MainWindow();
+		}
 	}
 }
 
@@ -84,6 +94,7 @@ void __stdcall PluginFinalize()
 {
 	if (init)
 	{
+		// Hangs on EnumThreadWindows
 		BulbToys::End();
 	}
 }

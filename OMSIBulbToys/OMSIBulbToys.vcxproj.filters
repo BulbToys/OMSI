@@ -86,7 +86,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\offsets.h">
+    <ClInclude Include="src\omsi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\bulbtoys\gui.h">

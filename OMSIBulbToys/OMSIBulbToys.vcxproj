@@ -142,7 +142,7 @@
     <ClInclude Include="core\minhook\minhook.h" />
     <ClInclude Include="core\minhook\trampoline.h" />
     <ClInclude Include="core\mini\ini.h" />
-    <ClInclude Include="src\offsets.h" />
+    <ClInclude Include="src\omsi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
