@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 
 // No offset macro
@@ -10,12 +9,16 @@ namespace Offsets
 	constexpr const char* const str = ":3";
 	constexpr int len = std::char_traits<char>::length(str);
 
+	inline uintptr_t TheDevice = NO_OF(0);
+
 	namespace v2_3_004
 	{
 		inline const char* Check()
 		{
 			if (!strncmp(reinterpret_cast<char*>(0x7C9780), str, len))
 			{
+				TheDevice = 0x8627D0;
+
 				return "2.3.004 - Latest Steam version";
 			}
 
@@ -29,7 +32,8 @@ namespace Offsets
 		{
 			if (!strncmp(reinterpret_cast<char*>(0x7C9668), str, len))
 			{
-				return "2.2.032 - Tram patch";
+				//return "2.2.032 - Tram patch";
+				return nullptr;
 			}
 
 			return nullptr;
