@@ -62,14 +62,26 @@ void __stdcall AccessSystemVariable(unsigned short index, float* value, bool* wr
 		BulbToys::SetupParams params;
 		params.instance = dll_instance;
 		params.settings_file = "OMSI_BulbToys.ini";
-		params.GetDevice = +[]()
+		params.GetD3D9Device = +[]()
 		{
-			return Read<IDirect3DDevice9*>(OMSI::TheDevice);
+			return Read<LPVOID>(OMSI::TheDirect3DDevice9);
+		};
+		params.GetDI8KeyboardDevice = +[]()
+		{
+			LPVOID device = nullptr;
+
+			auto tdicl = Read<uintptr_t>(OMSI::TheDirectInputCl);
+			if (tdicl)
+			{
+				device = Read<LPVOID>(tdicl + 0x8);
+			}
+
+			return device;
 		};
 		init = BulbToys::Init(params);
 		if (init)
 		{
-			// IO doesn't work
+			// Keyboard IO doesn't work
 			new MainWindow();
 		}
 	}

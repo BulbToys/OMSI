@@ -12,9 +12,9 @@ namespace OMSI
 	constexpr const char* const check_str = ":3";
 	constexpr int check_str_len = std::char_traits<char>::length(check_str);
 
-	inline uintptr_t TheDevice = NO_OF(0);
-
 	inline uintptr_t TheApplication = NO_OF(0);
+	inline uintptr_t TheDirect3DDevice9 = NO_OF(1);
+	inline uintptr_t TheDirectInputCl = NO_OF(2);	
 
 	namespace v2_3_004
 	{
@@ -22,8 +22,9 @@ namespace OMSI
 		{
 			if (!strncmp(reinterpret_cast<char*>(0x7C9780), check_str, check_str_len))
 			{
-				TheDevice = 0x8627D0;
 				TheApplication = 0x85F3D4;
+				TheDirect3DDevice9 = 0x8627D0;
+				TheDirectInputCl = 0x862EE8;
 
 				return "2.3.004 - Latest Steam version";
 			}

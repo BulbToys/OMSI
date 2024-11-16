@@ -94,6 +94,7 @@
     <ClCompile Include="core\bulbtoys\my_imgui.cpp" />
     <ClCompile Include="core\bulbtoys\settings.cpp" />
     <ClCompile Include="core\bulbtoys\utils.cpp" />
+    <ClCompile Include="core\bulbtoys\version.cpp" />
     <ClCompile Include="core\imgui\imgui.cpp" />
     <ClCompile Include="core\imgui\imgui_demo.cpp" />
     <ClCompile Include="core\imgui\imgui_draw.cpp" />
@@ -114,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\bulbtoys.h" />
+    <ClInclude Include="core\bulbtoys\git.h" />
     <ClInclude Include="core\bulbtoys\gui.h" />
     <ClInclude Include="core\bulbtoys\hook.h" />
     <ClInclude Include="core\bulbtoys\hooks.h" />
@@ -124,6 +126,7 @@
     <ClInclude Include="core\bulbtoys\my_imgui.h" />
     <ClInclude Include="core\bulbtoys\settings.h" />
     <ClInclude Include="core\bulbtoys\utils.h" />
+    <ClInclude Include="core\bulbtoys\version.h" />
     <ClInclude Include="core\imgui\imconfig.h" />
     <ClInclude Include="core\imgui\imgui.h" />
     <ClInclude Include="core\imgui\imgui_impl_dx9.h" />

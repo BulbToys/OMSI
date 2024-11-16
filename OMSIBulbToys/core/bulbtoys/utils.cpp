@@ -15,7 +15,7 @@ void IFileBase::Save(const char* filename)
 		sprintf_s(msg, 512, "Error saving file %s.\n\n"
 			"The object you are trying to save has failed to validate, indicating it contains invalid (corrupt or otherwise unsafe) values.\n\nProceed?", filename);
 
-		if (MessageBoxA(NULL, msg, PROJECT_NAME, MB_ICONWARNING | MB_YESNO) != IDYES)
+		if (MessageBoxA(NULL, msg, PROJECT_NAME, MB_ICONWARNING | MB_YESNO | MB_SYSTEMMODAL) != IDYES)
 		{
 			return;
 		}
@@ -80,7 +80,7 @@ bool IFileBase::Load(const char* filename, bool allow_undersize)
 			sprintf_s(msg, 512, "Error opening file %s.\n\n"
 				"The object you are trying to load has failed to validate, indicating it contains invalid (corrupt or otherwise unsafe) values.\n\nProceed?", filename);
 
-			if (MessageBoxA(NULL, msg, PROJECT_NAME, MB_ICONWARNING | MB_YESNO) != IDYES)
+			if (MessageBoxA(NULL, msg, PROJECT_NAME, MB_ICONWARNING | MB_YESNO | MB_SYSTEMMODAL) != IDYES)
 			{
 				return false;
 			}
@@ -189,20 +189,10 @@ bool PatchInfo::SanityCheck()
 	return true;
 }
 
-void Error(const char* message, ...)
+void PatchCall(uintptr_t address, void* func)
 {
-	char buffer[1024];
-	va_list va;
-	va_start(va, message);
-	vsprintf_s(buffer, 1024, message, va);
-
-	MessageBoxA(NULL, buffer, PROJECT_NAME, MB_ICONERROR);
-}
-
-void PatchNOP(uintptr_t address, int count)
-{
-	new PatchInfo(address, count);
-	memset(reinterpret_cast<void*>(address), 0x90, count);
+	ASSERT(Read<uint8_t>(address) == 0xE8);
+	Patch<uintptr_t>(address + 1, reinterpret_cast<uintptr_t>(func) - address - 5);
 }
 
 void PatchJMP(uintptr_t address, void* asm_func, size_t patch_len)
@@ -223,6 +213,12 @@ void PatchJMP(uintptr_t address, void* asm_func, size_t patch_len)
 	memset(reinterpret_cast<void*>(address + 5), 0x90, patch_len - 5);
 }
 
+void PatchNOP(uintptr_t address, int count)
+{
+	new PatchInfo(address, count);
+	memset(reinterpret_cast<void*>(address), 0x90, count);
+}
+
 void Unpatch(uintptr_t address, bool force_unpatch)
 {
 	auto patch = PatchInfo::Find(address);
@@ -238,4 +234,14 @@ void Unpatch(uintptr_t address, bool force_unpatch)
 
 	memcpy(reinterpret_cast<void*>(address), patch->Bytes(), patch->Len());
 	delete patch;
+}
+
+int WideStringToString(wchar_t* wide_str, size_t wide_str_len, char* str, size_t str_len)
+{
+	return WideCharToMultiByte(CP_UTF8, 0, wide_str, wide_str_len, str, str_len, NULL, NULL);
+}
+
+int StringToWideString(char* str, size_t str_len, wchar_t* wide_str, size_t wide_str_len)
+{
+	return MultiByteToWideChar(CP_UTF8, 0, str, str_len, wide_str, wide_str_len);
 }
