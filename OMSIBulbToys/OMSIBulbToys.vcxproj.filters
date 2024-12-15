@@ -81,6 +81,9 @@
     <ClCompile Include="core\bulbtoys\version.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\modules\test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="OMSIBulbToys.opl" />

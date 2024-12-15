@@ -30,25 +30,6 @@ void __stdcall PluginStart(void* aOwner)
 		Error("This version of OMSI 2 is not supported.");
 		return;
 	}
-
-	/*
-	FILE* console;
-	if (!AllocConsole())
-	{
-		MessageBox(0, "WARN: Console already allocated!", "OMSI Bulb Toys", MB_OK);
-	}
-	SetConsoleTitle("OMSI Texture Manager - Debug");
-
-	freopen_s(&console, "CONIN$", "r", stdin);
-	freopen_s(&console, "CONOUT$", "w", stdout);
-	freopen_s(&console, "CONOUT$", "w", stderr);
-
-	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	DWORD mode;
-	GetConsoleMode(handle, &mode);
-	SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN);
-	*/
 }
 
 static bool init = false;
@@ -78,12 +59,8 @@ void __stdcall AccessSystemVariable(unsigned short index, float* value, bool* wr
 
 			return device;
 		};
+		params.keyboard_input_method = BulbToys::InputMethod::DeviceState;
 		init = BulbToys::Init(params);
-		if (init)
-		{
-			// Keyboard IO doesn't work
-			new MainWindow();
-		}
 	}
 }
 
@@ -107,6 +84,8 @@ void __stdcall PluginFinalize()
 	if (init)
 	{
 		// Hangs on EnumThreadWindows
-		BulbToys::End();
+		//BulbToys::End();
 	}
+
+	// Crashes on DestroyWindow
 }
