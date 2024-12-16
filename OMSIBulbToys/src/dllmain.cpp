@@ -23,9 +23,9 @@ BOOL APIENTRY DllMain(HMODULE instance, DWORD, LPVOID)
 
 void __stdcall PluginStart(void* aOwner)
 {
-	const char* version = nullptr;
+	const char* version = Game::Init();
 
-	if (!(version = OMSI::v2_3_004::Check()) && !(version = OMSI::v2_2_032::Check()))
+	if (!version)
 	{
 		Error("This version of OMSI 2 is not supported.");
 		return;
@@ -45,13 +45,13 @@ void __stdcall AccessSystemVariable(unsigned short index, float* value, bool* wr
 		params.settings_file = "OMSI_BulbToys.ini";
 		params.GetD3D9Device = +[]()
 		{
-			return Read<LPVOID>(OMSI::TheDirect3DDevice9);
+			return OMSI->BulbToys_GetD3DDevice9();
 		};
 		params.GetDI8KeyboardDevice = +[]()
 		{
 			LPVOID device = nullptr;
 
-			auto tdicl = Read<uintptr_t>(OMSI::TheDirectInputCl);
+			auto tdicl = OMSI->BulbToys_GetDirectInputCl();
 			if (tdicl)
 			{
 				device = Read<LPVOID>(tdicl + 0x8);

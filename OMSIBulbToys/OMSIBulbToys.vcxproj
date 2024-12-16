@@ -109,6 +109,8 @@
     <ClCompile Include="core\minhook\trampoline.c" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\modules\test.cpp" />
+    <ClCompile Include="src\v2_2_032.cpp" />
+    <ClCompile Include="src\v2_3_004.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OMSIBulbToys.def" />
