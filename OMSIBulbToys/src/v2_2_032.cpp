@@ -13,6 +13,14 @@ static class v2_2_032 : public Game
 	}
 
 	virtual LPVOID BulbToys_GetD3DDevice9() override final { ASSERT(!"TODO"); return 0; }
-
 	virtual uintptr_t BulbToys_GetDirectInputCl() override final { ASSERT(!"TODO"); return 0; }
+
+	virtual uintptr_t BulbToys_GetTextureManager1() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetTextureManager2() override final { ASSERT(!"TODO"); return 0; }
+
+	virtual void BulbToys_ForceOnDepot(bool on_depot) override final { ASSERT(!"TODO"); }
+
+	virtual uintptr_t BulbToys_GetMyVehicle() override final { ASSERT(!"TODO"); return 0; }
+
+	
 } _;
