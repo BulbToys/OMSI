@@ -16,7 +16,8 @@ namespace texman
 				ImGui::BulbToys_AddyLabel(texman2, "Texture Manager 2");
 
 				static int count = 0;
-				ImGui::BulbToys_InputInt("Skip count", "##REMOVEME", &count, 0);
+				ImGui::Text("Skip count");
+				ImGui::InputInt("##REMOVEME", &count, 0);
 				int skip_count = count;
 
 				void* texture = nullptr;

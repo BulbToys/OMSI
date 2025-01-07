@@ -23,7 +23,8 @@ namespace vehicle
 				if (trvinst)
 				{
 					auto dirt = reinterpret_cast<float*>(trvinst + 0x5F8);
-					ImGui::BulbToys_SliderFloat("Dirt", "##VehicleDirt", dirt, 0, 1);
+					ImGui::Text("Dirt");
+					ImGui::SliderFloat("##VehicleDirt", dirt, 0, 1);
 				}
 			}
 
