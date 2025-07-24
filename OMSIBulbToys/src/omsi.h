@@ -101,4 +101,6 @@ public:
 
 	virtual inline int BulbToys_ListLength(uintptr_t list) final { return Read<int>(list - 4); }
 
+	virtual HRESULT BulbToys_D3DXSaveTextureToFile(LPCWSTR pDestFile, DWORD DestFormat, void* pSrcTexture, void* pSrcPalette) = 0;
+
 } *OMSI;

@@ -19,64 +19,6 @@ void GUI::CloseAllWindows()
 	IWindow::CloseAll();
 }
 
-GUI::Overlay::~Overlay()
-{
-	auto iter = panels.begin();
-	while (iter != panels.end())
-	{
-		auto panel = *iter;
-
-		panels.erase(iter);
-		delete panel;
-	}
-}
-
-void GUI::Overlay::Render()
-{
-	RECT rect;
-	GetClientRect(IO::Get()->Window(), &rect);
-	float w = rect.right - rect.left;
-	float h = rect.bottom - rect.top;
-
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(w, h));
-	if (ImGui::Begin("Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-		ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground))
-	{
-		if (ImGui::BulbToys_Overlay_BeginTable("Watermark"))
-		{
-			auto gui = GUI::Get();
-			if (gui->FrameCalc_TypeRef() == GUI::FrameCalc::Type::None)
-			{
-				ImGui::Text("Powered by BulbToys %d | Built on %s", GIT_REV_COUNT + 1, BulbToys::GetBuildDateTime());
-			}
-			else
-			{
-				ImGui::Text("%d FPS | Powered by BulbToys %d | Built on %s", GUI::Get()->FrameCalc_FPS(), GIT_REV_COUNT + 1, BulbToys::GetBuildDateTime());
-			}
-
-			ImGui::BulbToys_Overlay_EndTable();
-		}
-
-		// Overlay module panels
-		auto iter = panels.begin();
-		while (iter != panels.end())
-		{
-			auto panel = *iter;
-
-			if (!panel->Draw())
-			{
-				// A panel has ended the overlay and requested to end any further rendering immediately
-				return;
-			}
-
-			++iter;
-		}
-
-		ImGui::End();
-	}
-}
-
 GUI::FrameCalc::FrameCalc()
 {
 	Settings::String<"GUI", "FrameCalcType", "none", 7> setting;
@@ -84,7 +26,7 @@ GUI::FrameCalc::FrameCalc()
 
 	// Only psychopaths use mixed case here
 	if (!strcmp(value, "early") || !strcmp(value, "EARLY"))
-	{ 
+	{
 		this->type = Type::Early;
 	}
 	if (!strcmp(value, "late") || !strcmp(value, "LATE"))
@@ -135,6 +77,182 @@ void GUI::FrameCalc::Perform()
 	{
 		render_time.Start();
 	}
+}
+
+GUI::Overlay::~Overlay()
+{
+	auto iter = panels.begin();
+	while (iter != panels.end())
+	{
+		auto panel = *iter;
+
+		panels.erase(iter);
+		delete panel;
+	}
+}
+
+void GUI::Overlay::Render()
+{
+	RECT rect;
+	GetClientRect(IO::Get()->Window(), &rect);
+	float w = rect.right - rect.left;
+	float h = rect.bottom - rect.top;
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(w, h));
+	if (ImGui::Begin("Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground))
+	{
+		if (ImGui::BulbToys_Overlay_BeginTable("Watermark"))
+		{
+			auto frame_calc = GUI::Get()->FrameCalc();
+			if (frame_calc->Type() == GUI::FrameCalc::Type::None)
+			{
+				ImGui::Text("Powered by BulbToys %d | Built on %s", BulbToys::GetBuildNumber(), BulbToys::GetBuildDateTime());
+			}
+			else
+			{
+				ImGui::Text("%d FPS | Powered by BulbToys %d | Built on %s", frame_calc->FPS(), BulbToys::GetBuildNumber(), BulbToys::GetBuildDateTime());
+			}
+
+			ImGui::BulbToys_Overlay_EndTable();
+		}
+
+		// Overlay module panels
+		auto iter = panels.begin();
+		while (iter != panels.end())
+		{
+			auto panel = *iter;
+
+			if (!panel->Draw())
+			{
+				// A panel has ended the overlay and requested to end any further rendering immediately
+				return;
+			}
+
+			++iter;
+		}
+
+		ImGui::End();
+	}
+}
+
+
+GUI::TextureLoader::TextureLoader()
+{
+	library = LoadLibraryA("d3dx9_30.dll");
+	if (!library)
+	{
+		lasterr_library = GetLastError();
+		return;
+	}
+
+	CreateTexture = reinterpret_cast<decltype(CreateTexture)>(GetProcAddress(library, "D3DXCreateTextureFromFileInMemory"));
+	if (!CreateTexture)
+	{
+		lasterr_CreateTexture = GetLastError();
+		return;
+	}
+}
+
+GUI::TextureLoader::~TextureLoader()
+{
+	if (library)
+	{
+		auto result = FreeLibrary(library);
+		if (!result)
+		{
+			Error("FreeLibrary failed: %s", LastError().Message());
+		}
+	}
+}
+
+bool GUI::TextureLoader::Online()
+{
+	if (!library)
+	{
+		Error("LoadLibraryA failed: %s", LastError(lasterr_library).Message());
+		return false;
+	}
+
+	if (!CreateTexture)
+	{
+		Error("GetProcAddress failed: %s", LastError(lasterr_CreateTexture).Message());
+		return false;
+	}
+
+	return true;
+}
+
+ImTextureID GUI::TextureLoader::Load(const char* filename)
+{
+	if (!Online())
+	{
+		return nullptr;
+	}
+
+	auto len = image_buffer.Load(filename, true);
+	if (len == 0)
+	{
+		return nullptr;
+	}
+
+	ImTextureID texture;
+	auto result = CreateTexture(GUI::Get()->Device(), &image_buffer.data, len, &texture);
+	if (result)
+	{
+		Error("Failed to create texture with HRESULT 0x%08X", result);
+		return nullptr;
+	}
+
+	return texture;
+}
+
+ImTextureID GUI::TextureLoader::LoadDialog(const char* title)
+{
+	if (!Online())
+	{
+		return nullptr;
+	}
+
+	constexpr const char* const filter =
+		"Bitmap (*.bmp)\0*.bmp\0"
+		"DirectDraw Surface (*.dds)\0*.dds\0"
+		"Device Independent Bitmap (*.dib)\0*.dib\0"
+		"High Dynamic Range (*.hdr)\0*.hdr\0"
+		"JPG image (*.jpg)\0*.jpg\0"
+		"JPEG image (*.jpeg)\0*.jpeg\0"
+		"Portable FloatMap (*.pfm)\0*.pfm\0"
+		"Portable Network Graphics (*.png)\0*.png\0"
+		"Portable PixMap (*.ppm)\0*.ppm\0"
+		"Targa (*.tga)\0*.tga\0"
+		"All Files (*.*)\0*.*\0";
+
+	auto len = image_buffer.LoadDialog(title, filter, nullptr, true);
+	if (len == 0)
+	{
+		return nullptr;
+	}
+
+	ImTextureID texture;
+	auto result = CreateTexture(GUI::Get()->Device(), &image_buffer.data, len, &texture);
+	if (result)
+	{
+		Error("Failed to create texture with HRESULT 0x%08X", result);
+		return nullptr;
+	}
+
+	return texture;
+}
+
+void GUI::TextureLoader::Unload(ImTextureID texture)
+{
+	if (!Online())
+	{
+		return;
+	}
+
+	reinterpret_cast<IUnknown*>(texture)->Release();
 }
 
 GUI::GUI(LPVOID device, HWND window)
@@ -297,7 +415,7 @@ void GUI::Render()
 		}
 	}
 
-	if (overlay.EnabledRef())
+	if (overlay.Enabled())
 	{
 		overlay.Render();
 	}
@@ -355,7 +473,7 @@ HRESULT APIENTRY GUI::ID3DDevice9_Present_(LPVOID device, LPVOID pSourceRect, LP
 		return GUI::ID3DDevice9_Present(device, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 	}
 
-	auto frame_calc_type = this_->frame_calc.TypeRef();
+	auto frame_calc_type = this_->frame_calc.Type();
 	if (frame_calc_type == GUI::FrameCalc::Type::Early)
 	{
 		this_->frame_calc.Perform();
@@ -587,18 +705,29 @@ bool MainWindow::Draw()
 	if (ImGui::BulbToys_Menu("[Main]"))
 	{
 		auto gui = GUI::Get();
+		auto frame_calc = gui->FrameCalc();
+		auto overlay = gui->Overlay();
+
 		auto io = IO::Get();
 
 		ImGui::Text("Dear ImGui version: " IMGUI_VERSION);
 
-		ImGui::Checkbox("Enable overlay", &gui->Overlay_EnabledRef());
+		static bool enable_overlay = overlay->Enabled();
+		if (ImGui::Checkbox("Enable overlay", &enable_overlay))
+		{
+			overlay->SetEnabled(enable_overlay);
+		}
 
 		// Check GUI::FrameCalc::Type for more information about these
+		static int frame_calc_type = frame_calc->Type();
 		const char* frame_calc_methods[] = { "None", "Early", "Late" };
 		ImGui::Text("Frame calc method:");
-		ImGui::Combo("##FrameCalcMethod", &gui->FrameCalc_TypeRef(), frame_calc_methods, IM_ARRAYSIZE(frame_calc_methods));
+		if (ImGui::Combo("##FrameCalcMethod", &frame_calc_type, frame_calc_methods, IM_ARRAYSIZE(frame_calc_methods)))
+		{
+			frame_calc->SetType(frame_calc_type);
+		}
 
-		ImGui::BeginDisabled(!gui->FrameCalc_TypeRef());
+		ImGui::BeginDisabled(!frame_calc->Type());
 
 		static int fps_limit = 0;
 		static bool fps_limit_enabled = false;
@@ -606,11 +735,11 @@ bool MainWindow::Draw()
 		{
 			if (fps_limit_enabled)
 			{
-				gui->FrameCalc_FPSLimitRef() = fps_limit;
+				frame_calc->SetFPSLimit(fps_limit);
 			}
 			else
 			{
-				gui->FrameCalc_FPSLimitRef() = 0;
+				frame_calc->SetFPSLimit(0);
 			}
 		}
 
@@ -618,7 +747,7 @@ bool MainWindow::Draw()
 		{
 			if (fps_limit_enabled)
 			{
-				gui->FrameCalc_FPSLimitRef() = fps_limit;
+				frame_calc->SetFPSLimit(fps_limit);
 			}
 		}
 

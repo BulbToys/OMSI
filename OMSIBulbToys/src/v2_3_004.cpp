@@ -40,4 +40,9 @@ static class v2_3_004 : public Game
 
 		return var;
 	}
+
+	virtual HRESULT BulbToys_D3DXSaveTextureToFile(LPCWSTR pDestFile, DWORD DestFormat, void* pSrcTexture, void* pSrcPalette) override final
+	{
+		return reinterpret_cast<HRESULT(__cdecl*)(LPCWSTR, DWORD, void*, void*)>(0x568070)(pDestFile, DestFormat, pSrcTexture, pSrcPalette);
+	}
 } _;

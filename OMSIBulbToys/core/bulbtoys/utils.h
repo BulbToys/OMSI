@@ -3,8 +3,6 @@
 #include <Windows.h>
 #include <unordered_map>
 
-#include "git.h"
-
 #define PROJECT_NAME "BulbToys"
 
 #define DIE() do { *((int*)0xDEAD) = 0; PostQuitMessage(0); } while (false)
@@ -16,6 +14,18 @@
 #define FUNC(address, return_t, callconv, name, ...) inline return_t (callconv* name)(__VA_ARGS__) = reinterpret_cast<decltype(name)>(address)
 
 /* ===== Structs ===== */
+
+// Simple RAII implementation of GetLastError
+class LastError
+{
+	LPSTR message = nullptr;
+public:
+	LastError(DWORD last_error);
+	LastError() : LastError(GetLastError()) {}
+	~LastError();
+
+	const char* Message();
+};
 
 // Base interface for all struct-files. Use IFile instead, which automatically implements Size() for you
 struct IFileBase
@@ -34,10 +44,10 @@ struct IFileBase
 	virtual void SaveDialog(const char* title = "Save File", const char* filter = "All Files (*.*)\0*.*\0", const char* default_extension = nullptr) final;
 
 	// Load the struct from a file named filename. Object remains unchanged if this returns false!
-	virtual bool Load(const char* filename, bool allow_undersize = false) final;
+	virtual size_t Load(const char* filename, bool allow_undersize = false) final;
 
 	// Prompt the user which file to load. Object remains unchanged if this returns false!
-	virtual bool LoadDialog(const char* title = "Load File", const char* filter = "All Files (*.*)\0*.*\0", const char* default_extension = nullptr,
+	virtual size_t LoadDialog(const char* title = "Load File", const char* filter = "All Files (*.*)\0*.*\0", const char* default_extension = nullptr,
 		bool allow_undersize = false) final;
 };
 
@@ -125,6 +135,39 @@ public:
 };
 
 /* ===== Templates ===== */
+
+template <size_t size = 1024>
+bool CopyToClipboardUnicode(const wchar_t* text, ...)
+{
+	auto mem = GlobalAlloc(GMEM_MOVEABLE, size * 2);
+	if (!mem)
+	{
+		return false;
+	}
+
+	auto ptr = GlobalLock(mem);
+	if (!ptr)
+	{
+		GlobalFree(mem);
+		return false;
+	}
+
+	wchar_t buffer[size] { 0 };
+	va_list va;
+	va_start(va, text);
+	vswprintf_s(buffer, size, text, va);
+
+	memcpy(ptr, buffer, size * 2);
+	GlobalUnlock(mem);
+
+	OpenClipboard(NULL);
+	EmptyClipboard();
+	SetClipboardData(CF_UNICODETEXT, mem);
+	CloseClipboard();
+
+	// The clipboard calls GlobalFree for us, no need to do it ourselves
+	return true;
+}
 
 template <size_t size = 1024>
 bool CopyToClipboard(const char* text, ...)

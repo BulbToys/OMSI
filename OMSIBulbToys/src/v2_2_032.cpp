@@ -22,5 +22,8 @@ static class v2_2_032 : public Game
 
 	virtual uintptr_t BulbToys_GetMyVehicle() override final { ASSERT(!"TODO"); return 0; }
 
-	
+	virtual HRESULT BulbToys_D3DXSaveTextureToFile(LPCWSTR pDestFile, DWORD DestFormat, void* pSrcTexture, void* pSrcPalette) override final
+	{
+		ASSERT(!"TODO"); return 0x8876086C;
+	}
 } _;

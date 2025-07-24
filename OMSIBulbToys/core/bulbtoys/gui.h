@@ -19,20 +19,6 @@ class GUI
 	static void CloseAllWindows();
 	IO::Hotkey<"CloseAllWindows", VK_F8> close_all_windows{ GUI::CloseAllWindows };
 
-	class Overlay
-	{
-		bool enabled = true;
-		std::vector<IPanel*> panels;
-	public:
-		Overlay() { this->panels = Modules::Panels(Module::DrawType::Overlay); }
-		~Overlay();
-
-		inline bool& EnabledRef() { return enabled; }
-
-		void Render();
-	};
-	Overlay overlay;
-
 	class FrameCalc
 	{
 	public:
@@ -59,13 +45,63 @@ class GUI
 	public:
 		FrameCalc();
 
-		inline int& TypeRef() { return type; }
-		inline int FPS() { return fps; }
-		inline int& FPSLimitRef() { return fps_limit; }
+		inline auto Type() { return type; }
+		inline void SetType(auto type) { this->type = type; }
+
+		inline auto FPS() { return fps; }
+
+		inline auto FPSLimit() { return type; }
+		inline void SetFPSLimit(auto fps_limit) { this->fps_limit = fps_limit; }
 
 		void Perform();
 	};
 	FrameCalc frame_calc;
+
+	class Overlay
+	{
+		bool enabled = true;
+		std::vector<IPanel*> panels;
+	public:
+		Overlay() { this->panels = Modules::Panels(Module::DrawType::Overlay); }
+		~Overlay();
+
+		inline bool Enabled() { return enabled; }
+		inline void SetEnabled(bool enabled) { this->enabled = enabled; }
+
+		void Render();
+	};
+	Overlay overlay;
+
+	class TextureLoader
+	{
+		static constexpr size_t max_size = 1024 * 1024 * 32;
+
+		struct ImageBuffer : public IFile<ImageBuffer>
+		{
+			char data[max_size] { 0 };
+
+			bool Validate() override final { return true; }
+		};
+		ImageBuffer image_buffer;
+
+		HMODULE library = nullptr;
+		DWORD lasterr_library = (1 << 29);
+
+		using D3DXCreateTextureFromFileInMemoryFn = HRESULT(WINAPI)(void* pDevice, void* pSrcData, UINT srcDataSize, ImTextureID* ppTexture);
+		D3DXCreateTextureFromFileInMemoryFn* CreateTexture = nullptr;
+		DWORD lasterr_CreateTexture = (1 << 29);
+	public:
+		TextureLoader();
+		~TextureLoader();
+
+		bool Online();
+
+		ImTextureID Load(const char* filename);
+		ImTextureID LoadDialog(const char* title = "Load Image");
+
+		void Unload(ImTextureID texture);
+	};
+	TextureLoader texture_loader;
 
 	GUI(LPVOID device, HWND window);
 	~GUI();
@@ -99,11 +135,11 @@ public:
 	static GUI* Get();
 	void End();
 
-	inline bool& Overlay_EnabledRef() { return overlay.EnabledRef(); }
+	inline auto Device() { return device; }
 
-	inline int& FrameCalc_TypeRef() { return frame_calc.TypeRef(); }
-	inline int FrameCalc_FPS() { return frame_calc.FPS(); }
-	inline int& FrameCalc_FPSLimitRef() { return frame_calc.FPSLimitRef(); }
+	inline auto FrameCalc() { return &frame_calc; }
+	inline auto Overlay() { return &overlay; }
+	inline auto TextureLoader() { return &texture_loader; }
 };
 
 class MainWindow : public IWindow
