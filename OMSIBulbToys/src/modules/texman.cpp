@@ -85,7 +85,8 @@ namespace texman
 
 				auto used_mem_table = 0.0f;
 
-				if (ImGui::BeginTable("TextureTable", 5, ImGuiTableFlags_SizingFixedFit))
+				constexpr auto column_count = 6;
+				if (ImGui::BeginTable("TextureTable", column_count, ImGuiTableFlags_SizingFixedFit))
 				{
 					ImGui::TableNextRow();
 
@@ -96,12 +97,15 @@ namespace texman
 					ImGui::Text("Path");
 
 					ImGui::TableSetColumnIndex(2);
-					ImGui::Text("Memory");
+					ImGui::Text("Size");
 
 					ImGui::TableSetColumnIndex(3);
-					ImGui::Text("Texture");
+					ImGui::Text("Memory");
 
 					ImGui::TableSetColumnIndex(4);
+					ImGui::Text("Texture");
+
+					ImGui::TableSetColumnIndex(5);
 					ImGui::Text("Surfaces");
 
 					int displayed_row = 1;
@@ -140,7 +144,7 @@ namespace texman
 
 						ImGui::TableNextRow();
 
-						for (int column = 0; column < 5; column++)
+						for (int column = 0; column < column_count; column++)
 						{
 							ImGui::TableSetColumnIndex(column);
 
@@ -160,8 +164,90 @@ namespace texman
 								{
 									ImGui::TextColored(color, "(null)");
 								}
+
+								if (ImGui::IsItemHovered())
+								{
+									ImGui::SetTooltip(
+									"uint16_t size_x = %hu;\n"
+									"uint16_t size_y = %hu;\n"
+									"double mem = %lf;\n"
+									"int datasize = %d;\n"
+									"bool dataready = %s;\n"
+									"void* Texture_ID3DT9 = %p;\n"
+									"void* oldTexture_ID3DT9 = %p;\n"
+									"char* path = %s;\n"
+									"char* justfilename = %s;\n"
+									"char* loadpath = %s;\n"
+									"char loaded = %d;\n"
+									"char load_request = %d;\n"
+									"bool managed = %s;\n"
+									"unsigned int failed = %u;\n"
+									"uint16_t used = %hu;\n"
+									"uint16_t used_highres = %hu;\n"
+									"bool threadloading = %s;\n"
+									"bool hasspecials = %s;\n"
+									"bool no_unload = %s;\n"
+									"bool onlyalpha = %s;\n"
+									"int NightMap = %d;\n"
+									"int WinterSnowMap = %d;\n"
+									"int WinterSnowfallMap = %d;\n"
+									"int FallMap = %d;\n"
+									"int SpringMap = %d;\n"
+									"int WinterMap = %d;\n"
+									"int SummerDryMap = %d;\n"
+									"int SurfMap = %d;\n"
+									"bool moisture = %s;\n"
+									"bool puddles = %s;\n"
+									"bool moisture_ic = %s;\n"
+									"bool puddles_ic = %s;\n"
+									"char surface = %d;\n"
+									"char surface_ic = %d;\n"
+									"bool terrainmapping = %s;\n"
+									"bool terrainmapping_alpha = %s;\n",
+									 textures[row].size_x,
+									 textures[row].size_y,
+									 textures[row].mem,
+									 textures[row].datasize,
+									 textures[row].dataready ? "true" : "false",
+									 textures[row].Texture_ID3DT9,
+									 textures[row].oldTexture_ID3DT9,
+									 textures[row].path ? textures[row].path : "(null)",
+									 textures[row].justfilename ? textures[row].justfilename : "(null)",
+									 textures[row].loadpath ? textures[row].loadpath : "(null)",
+									 textures[row].loaded,
+									 textures[row].load_request,
+									 textures[row].managed ? "true" : "false",
+									 textures[row].failed,
+									 textures[row].used,
+									 textures[row].used_highres,
+									 textures[row].threadloading ? "true" : "false",
+									 textures[row].hasspecials ? "true" : "false",
+									 textures[row].no_unload ? "true" : "false",
+									 textures[row].onlyalpha ? "true" : "false",
+									 textures[row].NightMap,
+									 textures[row].WinterSnowMap,
+									 textures[row].WinterSnowfallMap,
+									 textures[row].FallMap,
+									 textures[row].SpringMap,
+									 textures[row].WinterMap,
+									 textures[row].SummerDryMap,
+									 textures[row].SurfMap,
+									 textures[row].moisture ? "true" : "false",
+									 textures[row].puddles ? "true" : "false",
+									 textures[row].moisture_ic ? "true" : "false",
+									 textures[row].puddles_ic ? "true" : "false",
+									 textures[row].surface,
+									 textures[row].surface_ic,
+									 textures[row].terrainmapping ? "true" : "false",
+									 textures[row].terrainmapping_alpha ? "true" : "false"
+									);
+								}
 							}
 							else if (column == 2)
+							{
+								ImGui::TextColored(color, "%hux%hu", textures[row].size_x, textures[row].size_y);
+							}
+							else if (column == 3)
 							{
 								float mem = textures[row].mem;
 
@@ -174,7 +260,7 @@ namespace texman
 									ImGui::TextColored(color, "%.02f KB", mem / 1024.0);
 								}
 							}
-							else if (column == 3)
+							else if (column == 4)
 							{
 								auto texture = textures[row].Texture_ID3DT9;
 
@@ -279,7 +365,7 @@ namespace texman
 									}
 								}
 							}
-							else if (column == 4)
+							else if (column == 5)
 							{
 								auto texture = textures[row].Texture_ID3DT9;
 
