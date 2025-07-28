@@ -93,7 +93,30 @@ public:
 	virtual uintptr_t BulbToys_GetTextureManager1() = 0;
 	virtual uintptr_t BulbToys_GetTextureManager2() = 0;
 
+	/* ===== G A M E   F U N C S ===== */
+
+	virtual HRESULT D3DXSaveTextureToFile(LPCWSTR pDestFile, DWORD DestFormat, void* pSrcTexture, void* pSrcPalette) = 0;
+
+	virtual HRESULT D3DXCreateTextureFromFileExA(
+		void* pDevice,
+		const char* pSrcFile,
+		DWORD Width,
+		DWORD Height,
+		DWORD MipLevels,
+		DWORD Usage,
+		DWORD Format,
+		DWORD Pool,
+		DWORD Filter,
+		DWORD MipFilter,
+		DWORD ColorKey,
+		void* pSrcInfo,
+		void* pPalette,
+		void* ppTexture
+	) = 0;
+
 	/* ===== H E L P E R   F U N C S ===== */
+
+	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) = 0;
 
 	virtual void BulbToys_ForceOnDepot(bool on_depot) = 0;
 
@@ -101,6 +124,6 @@ public:
 
 	virtual inline int BulbToys_ListLength(uintptr_t list) final { return Read<int>(list - 4); }
 
-	virtual HRESULT BulbToys_D3DXSaveTextureToFile(LPCWSTR pDestFile, DWORD DestFormat, void* pSrcTexture, void* pSrcPalette) = 0;
-
+	virtual void BulbToys_SetTextureMaxSize(uint16_t size) = 0;
+	virtual void BulbToys_SetTextureUnloadFrames(uint16_t frames) = 0;
 } *OMSI;

@@ -17,7 +17,6 @@ namespace test
 		}
 	};
 
-
 	IPanel* Panel(Module::DrawType dt)
 	{
 		if (dt == Module::DrawType::MainWindow)

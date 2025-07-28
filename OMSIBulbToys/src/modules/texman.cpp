@@ -4,12 +4,80 @@
 
 namespace texman
 {
+	int force_mip_level = -1;
+
+	int unload_frames = 600;
+	constexpr int unload_frames_min = 15;
+	constexpr int unload_frames_max = 30000;
+
+	int tex_max_size = 256;
+	constexpr int tex_max_size_min = 1;
+	constexpr int tex_max_size_max = 16384;
+
+	HRESULT __cdecl d3dx9_D3DXCreateTextureFromFileExA(
+		void* pDevice,
+		const char* pSrcFile,
+		uint32_t Width,
+		uint32_t Height,
+		uint32_t MipLevels,
+		uint32_t Usage,
+		uint32_t Format,
+		uint32_t Pool,
+		uint32_t Filter,
+		uint32_t MipFilter,
+		uint32_t ColorKey,
+		void* pSrcInfo,
+		void* pPalette,
+		void* ppTexture)
+	{
+		// force_mip is implied
+		if (MipLevels == 0xFFFFFFFF)
+		{
+			MipLevels = force_mip_level;
+		}
+
+		return OMSI->D3DXCreateTextureFromFileExA(pDevice, pSrcFile, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+	}
+
 	struct TexManPanel : IPanel
 	{
 		virtual bool Draw() override final
 		{
 			if (ImGui::BulbToys_Menu("Texture Manager"))
 			{
+				ImGui::Text("Frames until unseen textures unload (default 600):");
+				if (ImGui::SliderInt("##UnloadFrames", &unload_frames, unload_frames_min, unload_frames_max, "%d", ImGuiSliderFlags_AlwaysClamp))
+				{
+					OMSI->BulbToys_SetTextureUnloadFrames(unload_frames);
+				}
+
+				ImGui::Text("Limit all textures to X*X instead of 256*256:");
+				if (ImGui::InputInt("##TexMax", &tex_max_size))
+				{
+					if (tex_max_size < tex_max_size_min)
+					{
+						tex_max_size = tex_max_size_min;
+					}
+					else if (tex_max_size > tex_max_size_max)
+					{
+						tex_max_size = tex_max_size_max;
+					}
+
+					OMSI->BulbToys_SetTextureMaxSize(tex_max_size);
+				}
+
+				/*
+				static bool force_mip = false;
+				if (ImGui::Checkbox("Force MipLevels", &force_mip))
+				{
+					OMSI->BulbToys_ForceMipLevelsPatch(!force_mip, d3dx9_D3DXCreateTextureFromFileExA);
+				}
+
+				ImGui::InputInt("##ForceMipLevels", &force_mip_level);
+				*/
+
+				ImGui::Separator();
+
 				auto texman1 = OMSI->BulbToys_GetTextureManager1();
 				auto texman1_count = OMSI->BulbToys_ListLength(Read<uintptr_t>(texman1 + 0x8));
 
@@ -68,6 +136,8 @@ namespace texman
 
 				static char mem_info[64] { 0 };
 				MYPRINTF(mem_info, 64, "%.0f / %.0f MB (%.0f MB free)", used_mem, total_mem, avail_mem);
+
+				ImGui::Text("Texture memory usage:");
 				ImGui::ProgressBar(used_mem / total_mem, ImVec2(-FLT_MIN, 0), mem_info);
 
 				static bool hide_unloaded = false;
@@ -355,7 +425,7 @@ namespace texman
 
 											if (format != -1)
 											{
-												OMSI->BulbToys_D3DXSaveTextureToFile(ofn.lpstrFile, format, texture, nullptr);
+												OMSI->D3DXSaveTextureToFile(ofn.lpstrFile, format, texture, nullptr);
 											}
 											else
 											{
@@ -503,7 +573,6 @@ namespace texman
 		}
 	};
 
-
 	IPanel* Panel(Module::DrawType dt)
 	{
 		if (dt == Module::DrawType::MainWindow)
@@ -513,6 +582,49 @@ namespace texman
 
 		return nullptr;
 	}
+
+	void Init()
+	{
+		Settings::UInt32<"TextureManager", "UnloadFrames", 600> unload_frames_setting;
+		auto value = unload_frames_setting.Get();
+		if (value != unload_frames && value >= 15 && value <= 30000)
+		{
+			if (value < unload_frames_min)
+			{
+				value = unload_frames_min;
+			}
+			else if (value > unload_frames_max)
+			{
+				value = unload_frames_max;
+			}
+
+			unload_frames = value;
+			OMSI->BulbToys_SetTextureUnloadFrames(unload_frames);
+		}
+
+		// NOTE: won't take effect on map start because it's too late, will have to reset the device
+		Settings::UInt32<"TextureManager", "TexMaxSize", 256> tex_max_size_setting;
+		value = tex_max_size_setting.Get();
+		if (value != tex_max_size)
+		{
+			if (value < tex_max_size_min)
+			{
+				value = tex_max_size_min;
+			}
+			else if (value > tex_max_size_max)
+			{
+				value = tex_max_size_max;
+			}
+
+			tex_max_size = value;
+			OMSI->BulbToys_SetTextureMaxSize(tex_max_size);
+		}
+	}
+
+	void End()
+	{
+
+	}
 }
 
-MODULE_PANEL_ONLY(texman);
+MODULE(texman);
