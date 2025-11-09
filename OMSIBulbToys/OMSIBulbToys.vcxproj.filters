@@ -96,6 +96,9 @@
     <ClCompile Include="src\modules\texman.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\modules\sixth_sense.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="OMSIBulbToys.opl" />

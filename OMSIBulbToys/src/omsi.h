@@ -85,6 +85,50 @@ public:
 		bool terrainmapping_alpha;
 	};
 
+	template <size_t size>
+	struct UnicodeString
+	{
+		uint16_t code_page;
+		uint16_t element_size;
+		uint32_t reference_count;
+		uint32_t length;
+		wchar_t string[size];
+
+		UnicodeString(const wchar_t* message, ...)
+		{
+			va_list va;
+			va_start(va, message);
+			vswprintf_s(string, size, message, va);
+
+			code_page = 1200; // CP_WINUNICODE
+			element_size = 2;
+			reference_count = -1;
+			length = std::char_traits<wchar_t>::length(string);
+		}
+	};
+
+	template <size_t size>
+	struct AnsiString
+	{
+		uint16_t code_page;
+		uint16_t element_size;
+		uint32_t reference_count;
+		uint32_t length;
+		char string[size];
+
+		AnsiString(const char* message, ...)
+		{
+			va_list va;
+			va_start(va, message);
+			vsprintf_s(string, size, message, va);
+
+			code_page = 1252; // CP_WINANSI
+			element_size = 1;
+			reference_count = -1;
+			length = std::char_traits<char>::length(string);
+		}
+	};
+
 	/* ===== C O N S T A N T S ===== */
 
 	virtual LPVOID BulbToys_GetD3DDevice9() = 0;
@@ -92,6 +136,9 @@ public:
 
 	virtual uintptr_t BulbToys_GetTextureManager1() = 0;
 	virtual uintptr_t BulbToys_GetTextureManager2() = 0;
+
+	virtual uintptr_t BulbToys_GetWeather() = 0;
+	virtual uintptr_t BulbToys_GetTimeTableManager() = 0;
 
 	/* ===== G A M E   F U N C S ===== */
 
@@ -120,10 +167,35 @@ public:
 
 	virtual void BulbToys_ForceOnDepot(bool on_depot) = 0;
 
+	virtual uintptr_t BulbToys_GetCurrentDriver() = 0;
+
 	virtual uintptr_t BulbToys_GetMyVehicle() = 0;
+
+	virtual char* BulbToys_GetLineName(int schedule_line) = 0;
+
+	virtual void BulbToys_GetTripInfo(int trip, int busstop_index, wchar_t** busstop_name, int* busstop_count) = 0;
+
+	virtual void BulbToys_GetWorldDate(char*& day_of_week, uint8_t& day, uint8_t& month, uint16_t& year) = 0;
+	virtual void BulbToys_GetWorldTime(uint8_t& hours, uint8_t& minutes, float& seconds) = 0;
+
+	virtual bool BulbToys_IsInMouseControl() = 0;
+	virtual bool BulbToys_IsSimPaused() = 0;
+
+	virtual inline bool BulbToys_BoundCheck(uintptr_t list, int index) final
+	{
+		if (index < 0 || index >= BulbToys_ListLength(list))
+		{
+			return false;
+		}
+
+		return true;
+	}
 
 	virtual inline int BulbToys_ListLength(uintptr_t list) final { return Read<int>(list - 4); }
 
 	virtual void BulbToys_SetTextureMaxSize(uint16_t size) = 0;
 	virtual void BulbToys_SetTextureUnloadFrames(uint16_t frames) = 0;
+
+	virtual uintptr_t BulbToys_TSound_Create() = 0;
+	virtual void BulbToys_TSound_Play(uintptr_t sound, const char* name) = 0;
 } *OMSI;
