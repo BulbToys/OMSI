@@ -19,7 +19,10 @@ namespace sixth_sense
 		bool basic_info = true;
 		bool pedals = true;
 		bool pedals_progress_bars = true;
+
 		bool pedals_mouse = true;
+		int pedals_mouse_y_offset = -30;
+
 		bool weather = true;
 		bool passengers = true;
 
@@ -81,6 +84,8 @@ namespace sixth_sense
 				ImGui::Text("progress bars )");
 
 				ImGui::Checkbox("Mouse control pedals", &vehicle::pedals_mouse);
+				ImGui::Text("Height (Y) offset:");
+				ImGui::InputInt("##MousePedalsYOffset", &vehicle::pedals_mouse_y_offset);
 
 				ImGui::Checkbox("Weather##Vehicle", &vehicle::weather);
 				ImGui::Checkbox("Passengers", &vehicle::passengers);
@@ -133,7 +138,7 @@ namespace sixth_sense
 				auto io = ImGui::GetIO();
 
 				auto screen_pos = ImGui::GetCursorScreenPos();
-				ImGui::SetCursorScreenPos({ io.MousePos.x, io.MousePos.y + 24 });
+				ImGui::SetCursorScreenPos({ io.MousePos.x, io.MousePos.y + vehicle::pedals_mouse_y_offset });
 
 				if (ImGui::BulbToys_Overlay_BeginTable("MouseCtrlPedals"))
 				{
@@ -747,6 +752,9 @@ namespace sixth_sense
 
 		Settings::Bool<"SixthSense", "Vehicle_Pedals_MouseControl", true> vehicle_pedals_mouse_setting;
 		vehicle::pedals_mouse = vehicle_pedals_mouse_setting.Get();
+
+		Settings::Int32<"SixthSense", "Vehicle_Pedals_MouseControl_HeightOffset", -30> vehicle_pedals_mouse_y_offset;
+		vehicle::pedals_mouse_y_offset = vehicle_pedals_mouse_y_offset.Get();
 
 		Settings::Bool<"SixthSense", "Vehicle_Weather", true> vehicle_weather_setting;
 		vehicle::weather = vehicle_weather_setting.Get();
