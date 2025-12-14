@@ -242,8 +242,12 @@ static class v2_3_004 : public Game
 		return sound;
 	}
 
-	virtual void BulbToys_TSound_Play(uintptr_t sound, const char* name) override final
+	virtual void BulbToys_TSound_Play(uintptr_t sound, const char* filename) override final
 	{
+		static Game::AnsiString<MAX_PATH> sound_name_ansi;
+		sound_name_ansi.SetString("%s", filename);
+		auto name = sound_name_ansi.string;
+
 		constexpr uintptr_t TSound_SetNewFilename = 0x74FC40;
 		constexpr uintptr_t TSound_Load = 0x74FF2C;
 		constexpr uintptr_t TSound_Play = 0x750444;
@@ -255,7 +259,6 @@ static class v2_3_004 : public Game
 
 		__asm
 		{
-			add     esp, 4
 			mov     eax, sound
 			mov     edx, name
 			call    TSound_SetNewFilename

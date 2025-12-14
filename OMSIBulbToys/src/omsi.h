@@ -88,21 +88,17 @@ public:
 	template <size_t size>
 	struct UnicodeString
 	{
-		uint16_t code_page;
-		uint16_t element_size;
-		uint32_t reference_count;
-		uint32_t length;
-		wchar_t string[size];
+		uint16_t code_page = 1200; // CP_WINUNICODE
+		uint16_t element_size = 2;
+		uint32_t reference_count = -1;
+		uint32_t length = 0;
+		wchar_t string[size]{ 0 };
 
-		UnicodeString(const wchar_t* message, ...)
+		void SetString(const wchar_t* message, ...)
 		{
 			va_list va;
 			va_start(va, message);
 			vswprintf_s(string, size, message, va);
-
-			code_page = 1200; // CP_WINUNICODE
-			element_size = 2;
-			reference_count = -1;
 			length = std::char_traits<wchar_t>::length(string);
 		}
 	};
@@ -110,21 +106,17 @@ public:
 	template <size_t size>
 	struct AnsiString
 	{
-		uint16_t code_page;
-		uint16_t element_size;
-		uint32_t reference_count;
-		uint32_t length;
-		char string[size];
+		uint16_t code_page = 1252; // CP_WINANSI
+		uint16_t element_size = 1;
+		uint32_t reference_count = -1;
+		uint32_t length = 0;
+		char string[size]{ 0 };
 
-		AnsiString(const char* message, ...)
+		void SetString(const char* message, ...)
 		{
 			va_list va;
 			va_start(va, message);
 			vsprintf_s(string, size, message, va);
-
-			code_page = 1252; // CP_WINANSI
-			element_size = 1;
-			reference_count = -1;
 			length = std::char_traits<char>::length(string);
 		}
 	};

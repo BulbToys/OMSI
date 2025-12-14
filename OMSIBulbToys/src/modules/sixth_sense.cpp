@@ -55,7 +55,7 @@ namespace sixth_sense
 
 				ImGui::Separator();
 
-				ImGui::Text("World info:");
+				ImGui::Text("World info: (");
 				ImGui::SameLine();
 				ImGui::Checkbox("##WorldColors", &world::colors);
 				ImGui::SameLine();
@@ -94,6 +94,7 @@ namespace sixth_sense
 				ImGui::Text("colors )");
 
 				ImGui::Checkbox("Timetable", &driver::timetable);
+				ImGui::Checkbox("Bus stops", &driver::bus_stops);
 				ImGui::Checkbox("Comfort", &driver::comfort);
 				ImGui::Checkbox("Rating", &driver::rating);
 			}
@@ -149,9 +150,6 @@ namespace sixth_sense
 			{
 				if (ImGui::BulbToys_Overlay_BeginTable("WorldInfo"))
 				{
-					// Tuesday, 5-Jul-22 | 11:31:19 [Paused!]
-					// 15 °C, 51% | Brightness: 69%
-
 					if (world::date_time)
 					{
 						char* day_of_week = nullptr;
@@ -188,7 +186,7 @@ namespace sixth_sense
 						bool paused = OMSI->BulbToys_IsSimPaused();
 						if (world::colors)
 						{
-							ImGui::Text("%s, %02d-%s-%02d | %02d:%02d:%02d", day_of_week ? day_of_week : "???", day, month_name(month), year % 100, hours, minutes, (int)seconds);
+							ImGui::Text("%s, %02d-%s-%02d %s %02d:%02d:%02d", day_of_week ? day_of_week : "???", day, month_name(month), year % 100, inline_separator, hours, minutes, (int)seconds);
 							if (paused)
 							{
 								ImGui::SameLine();
@@ -197,7 +195,7 @@ namespace sixth_sense
 						}
 						else
 						{
-							ImGui::Text("%s, %02d-%s-%02d | %02d:%02d:%02d%s", day_of_week ? day_of_week : "???", day, month_name(month), year % 100, hours, minutes, (int)seconds, paused ? " [Paused!]" : "");
+							ImGui::Text("%s, %02d-%s-%02d %s %02d:%02d:%02d%s", day_of_week ? day_of_week : "???", day, month_name(month), year % 100, inline_separator, hours, minutes, (int)seconds, paused ? " [Paused!]" : "");
 						}
 					}
 
@@ -218,13 +216,9 @@ namespace sixth_sense
 			{
 				if (ImGui::BulbToys_Overlay_BeginTable("VehicleInfo"))
 				{
-					// 12  km/h | 34% | 56.7 km
-					// G: 100% | B:  12% | C:   0% [Skidding!]
-					// 15 °C, 51% (Comfort: 25%) | Brightness: 69%
-					// Passengers: 12 / 36 (24) [Stop!]
-
 					if (vehicle::basic_info)
 					{
+						auto ai = Read<bool>(vehicle + 0x624);
 						auto speed = Read<float>(vehicle + 0x1D4) * 3.6f;
 						auto fuel = Read<float>(vehicle + 0x7CC) * 100.0f;
 						auto mileage = Read<double>(vehicle + 0x430);
@@ -232,6 +226,13 @@ namespace sixth_sense
 
 						if (vehicle::colors)
 						{
+							if (ai)
+							{
+								ImGui::TextColored({ 1, 1, 0, 1 }, "AI");
+								ImGui::SameLine();
+								ImGui::Text("%s", inline_separator);
+								ImGui::SameLine();
+							}
 							ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km", speed, inline_separator, fuel, inline_separator, mileage);
 							if (skidding)
 							{
@@ -241,7 +242,12 @@ namespace sixth_sense
 						}
 						else
 						{
-							ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km%s", speed, inline_separator, fuel, inline_separator, mileage, skidding ? "" : " [Skidding!]");
+							if (ai)
+							{
+								ImGui::Text("AI %s", inline_separator);
+								ImGui::SameLine();
+							}
+							ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km%s", speed, inline_separator, fuel, inline_separator, mileage, skidding ? " [Skidding!]" : "");
 						}
 					}
 
@@ -474,13 +480,32 @@ namespace sixth_sense
 			{
 				if (ImGui::BulbToys_Overlay_BeginTable("DriverInfo"))
 				{
-					// E10 => Ledine | Zlatiborska @ 12:34:56 (+2:10)
-					// Comfort: 100.0% (20783 / 20783)
-					// Rating: 99.0% (excellent)
-
 					if (vehicle && driver::timetable)
 					{
 						auto terminus = Read<char*>(vehicle + 0x7BC);
+						auto allexit = !strncmp(terminus, "$allexit$", 10);
+						if (!terminus || allexit)
+						{
+							auto myhof = Read<int>(vehicle + 0x7C8);
+							auto trv = Read<uintptr_t>(vehicle + 0x710);
+							if (trv)
+							{
+								auto hoefe = Read<uintptr_t>(trv + 0x5E4);
+								if (hoefe && OMSI->BulbToys_BoundCheck(hoefe, myhof))
+								{
+									auto hof = Read<uintptr_t>(hoefe + myhof * 4);
+									if (hof)
+									{
+										auto targets = Read<uintptr_t>(hof + 0x14);
+										auto target_index = Read<int>(vehicle + 0x7B8);
+										if (targets && OMSI->BulbToys_BoundCheck(targets, target_index))
+										{
+											terminus = Read<char*>(targets + 0x18 * target_index + 8);
+										}
+									}
+								}
+							}
+						}
 
 						// is timetable valid?
 						if (Read<bool>(vehicle + 0x65C))
@@ -518,6 +543,8 @@ namespace sixth_sense
 							int next_m = (next_time % 3600) / 60;
 							int next_s = next_time % 60;
 
+							float distance = Read<float>(vehicle + 0x688);
+
 							if (driver::colors)
 							{
 								ImVec4 delay_color = { 0, 1, 0, 1 }; // green
@@ -546,18 +573,60 @@ namespace sixth_sense
 									}
 								}
 
-								ImGui::Text("%s => %s %s [%d/%d] %s @ %02d:%02d:%02d", line ? line : "???", terminus, inline_separator, next + 1, stop_count + 1, next_stop, next_h, next_m, next_s);
+								ImGui::Text("%s => %s", line ? line : "???", terminus ? terminus : "???");
+								if (allexit)
+								{
+									ImGui::SameLine();
+									ImGui::TextColored({ 1, 1, 0, 1 }, "(allexit)");
+								}
+								ImGui::SameLine();
+								ImGui::Text("%s [%d/%d] %s @ %02d:%02d:%02d", inline_separator, next + 1, stop_count + 1, next_stop, next_h, next_m, next_s);
+
 								ImGui::SameLine();
 								ImGui::TextColored(delay_color, "(%s)", delay_str);
+								if (distance < 999'999.0f)
+								{
+									ImGui::SameLine();
+									ImGui::Text("(%.0fm)", distance);
+								}
 							}
 							else
 							{
-								ImGui::Text("%s => %s %s [%d/%d] %s @ %02d:%02d:%02d (%s)", line ? line : "???", terminus, inline_separator, next, stop_count, next_stop, next_h, next_m, next_s, delay_str);
+								ImGui::Text("%s => %s %s%s [%d/%d] %s @ %02d:%02d:%02d (%s)", 
+									line ? line : "???",
+									terminus ? terminus : "???",
+									allexit ? " (allexit)" : "",
+									inline_separator,
+									next + 1,
+									stop_count + 1,
+									next_stop,
+									next_h,
+									next_m,
+									next_s,
+									delay_str);
+
+								if (distance < 999'999.0f)
+								{
+									ImGui::SameLine();
+									ImGui::Text("(%.0fm)", distance);
+								}
 							}
 						}
 						else
 						{
-							ImGui::Text("[No Timetable] => %s", terminus);
+							ImGui::Text("[No Timetable] => %s", terminus ? terminus : "???");
+							if (allexit)
+							{
+								ImGui::SameLine();
+								if (driver::colors)
+								{
+									ImGui::TextColored({ 1, 1, 0, 1 }, "(allexit)");
+								}
+								else
+								{
+									ImGui::Text("(allexit)");
+								}
+							}
 						}
 					}
 
@@ -571,7 +640,7 @@ namespace sixth_sense
 							auto on_time = total - late - early;
 							float perc = ((float)on_time / (float)total) * 100.0f;
 
-							ImGui::Text("Bus stops: %.02f%% (%d / %d (%d)) | L: %d | E: %d", perc, on_time, total, late + early, late, early);
+							ImGui::Text("Bus stops: %.02f%% (%d / %d (%d)) %s L: %d %s E: %d", perc, on_time, total, late + early, inline_separator, late, inline_separator, early);
 						}
 
 						if (driver::comfort)
@@ -652,7 +721,53 @@ namespace sixth_sense
 
 	void Init()
 	{
-		// settings todo
+		Settings::String<"SixthSense", "InlineSeparator", "|", 4> inline_separator_setting;
+		strncpy_s(inline_separator, 4, inline_separator_setting.Get(), 3);
+
+		Settings::Bool<"SixthSense", "World_Colors", true> world_colors_setting;
+		world::colors = world_colors_setting.Get();
+
+		Settings::Bool<"SixthSense", "World_DateTime", true> world_date_time_setting;
+		world::date_time = world_date_time_setting.Get();
+
+		Settings::Bool<"SixthSense", "World_Weather", true> world_weather_setting;
+		world::weather = world_weather_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_Colors", true> vehicle_colors_setting;
+		vehicle::colors = vehicle_colors_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_BasicInfo", true> vehicle_basic_info_setting;
+		vehicle::basic_info = vehicle_basic_info_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_Pedals", true> vehicle_pedals_setting;
+		vehicle::pedals = vehicle_pedals_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_Pedals_ProgressBars", true> vehicle_pedals_pb_setting;
+		vehicle::pedals_progress_bars = vehicle_pedals_pb_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_Pedals_MouseControl", true> vehicle_pedals_mouse_setting;
+		vehicle::pedals_mouse = vehicle_pedals_mouse_setting.Get();
+
+		Settings::Bool<"SixthSense", "Vehicle_Weather", true> vehicle_weather_setting;
+		vehicle::weather = vehicle_weather_setting.Get();
+		
+		Settings::Bool<"SixthSense", "Vehicle_Passengers", true> vehicle_passengers_setting;
+		vehicle::passengers = vehicle_passengers_setting.Get();
+
+		Settings::Bool<"SixthSense", "Driver_Colors", true> driver_colors_setting;
+		driver::colors = driver_colors_setting.Get();
+
+		Settings::Bool<"SixthSense", "Driver_Timetable", true> driver_timetable_setting;
+		driver::timetable = driver_timetable_setting.Get();
+
+		Settings::Bool<"SixthSense", "Driver_BusStops", true> driver_bus_stops_setting;
+		driver::bus_stops = driver_bus_stops_setting.Get();
+
+		Settings::Bool<"SixthSense", "Driver_Comfort", true> driver_comfort_setting;
+		driver::comfort = driver_comfort_setting.Get();
+
+		Settings::Bool<"SixthSense", "Driver_Rating", true> driver_rating_setting;
+		driver::rating = driver_rating_setting.Get();
 	}
 
 	void End()

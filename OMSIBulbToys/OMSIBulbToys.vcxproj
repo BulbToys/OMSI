@@ -71,12 +71,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;OMSIBULBTOYS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SFML_STATIC;WIN32;NDEBUG;OMSIBULBTOYS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>ext;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -85,7 +86,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>OMSIBulbToys.def</ModuleDefinitionFile>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ext/sfml/sfml-system-s.lib;ext/sfml/flac.lib;ext/sfml/vorbisenc.lib;ext/sfml/vorbisfile.lib;ext/sfml/vorbis.lib;ext/sfml/ogg.lib;ext/sfml/sfml-audio-s.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>del "$(IntDir)version.obj"</Command>
@@ -114,14 +115,23 @@
     <ClCompile Include="core\minhook\hook.c" />
     <ClCompile Include="core\minhook\trampoline.c" />
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\modules\announcer_sfml.cpp" />
     <ClCompile Include="src\modules\sixth_sense.cpp" />
     <ClCompile Include="src\modules\test.cpp" />
     <ClCompile Include="src\modules\texman.cpp" />
     <ClCompile Include="src\modules\vehicle.cpp" />
     <ClCompile Include="src\v2_2_032.cpp" />
     <ClCompile Include="src\v2_3_004.cpp" />
+    <ClCompile Include="src\veh.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ext\sfml\Audio\SoundFileFactory.inl" />
+    <None Include="ext\sfml\System\Angle.inl" />
+    <None Include="ext\sfml\System\String.inl" />
+    <None Include="ext\sfml\System\Time.inl" />
+    <None Include="ext\sfml\System\Utf.inl" />
+    <None Include="ext\sfml\System\Vector2.inl" />
+    <None Include="ext\sfml\System\Vector3.inl" />
     <None Include="OMSIBulbToys.def" />
     <None Include="OMSIBulbToys.opl" />
   </ItemGroup>
@@ -157,7 +167,44 @@
     <ClInclude Include="core\minhook\minhook.h" />
     <ClInclude Include="core\minhook\trampoline.h" />
     <ClInclude Include="core\mini\ini.h" />
+    <ClInclude Include="ext\sfml\Audio.hpp" />
+    <ClInclude Include="ext\sfml\Audio\AudioResource.hpp" />
+    <ClInclude Include="ext\sfml\Audio\Export.hpp" />
+    <ClInclude Include="ext\sfml\Audio\InputSoundFile.hpp" />
+    <ClInclude Include="ext\sfml\Audio\Listener.hpp" />
+    <ClInclude Include="ext\sfml\Audio\Music.hpp" />
+    <ClInclude Include="ext\sfml\Audio\OutputSoundFile.hpp" />
+    <ClInclude Include="ext\sfml\Audio\PlaybackDevice.hpp" />
+    <ClInclude Include="ext\sfml\Audio\Sound.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundBuffer.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundBufferRecorder.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundChannel.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundFileFactory.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundFileReader.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundFileWriter.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundRecorder.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundSource.hpp" />
+    <ClInclude Include="ext\sfml\Audio\SoundStream.hpp" />
+    <ClInclude Include="ext\sfml\Config.hpp" />
+    <ClInclude Include="ext\sfml\System.hpp" />
+    <ClInclude Include="ext\sfml\System\Angle.hpp" />
+    <ClInclude Include="ext\sfml\System\Clock.hpp" />
+    <ClInclude Include="ext\sfml\System\Err.hpp" />
+    <ClInclude Include="ext\sfml\System\Exception.hpp" />
+    <ClInclude Include="ext\sfml\System\Export.hpp" />
+    <ClInclude Include="ext\sfml\System\FileInputStream.hpp" />
+    <ClInclude Include="ext\sfml\System\InputStream.hpp" />
+    <ClInclude Include="ext\sfml\System\MemoryInputStream.hpp" />
+    <ClInclude Include="ext\sfml\System\NativeActivity.hpp" />
+    <ClInclude Include="ext\sfml\System\Sleep.hpp" />
+    <ClInclude Include="ext\sfml\System\String.hpp" />
+    <ClInclude Include="ext\sfml\System\SuspendAwareClock.hpp" />
+    <ClInclude Include="ext\sfml\System\Time.hpp" />
+    <ClInclude Include="ext\sfml\System\Utf.hpp" />
+    <ClInclude Include="ext\sfml\System\Vector2.hpp" />
+    <ClInclude Include="ext\sfml\System\Vector3.hpp" />
     <ClInclude Include="src\omsi.h" />
+    <ClInclude Include="src\veh.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,6 @@
 #include "../../core/bulbtoys.h"
 #include "../omsi.h"
+#include "../veh.h"
 
 namespace announcer
 {
@@ -8,6 +9,8 @@ namespace announcer
 
 	struct AnnouncerPanel : IPanel
 	{
+		char sound_name[MAX_PATH]{ 0 };
+
 		virtual bool Draw() override final
 		{
 			if (ImGui::BulbToys_Menu("Announcer"))
@@ -21,14 +24,12 @@ namespace announcer
 					ImGui::SliderFloat("##AnnouncerVolume", reinterpret_cast<float*>(sound + 0x6C), 0.0f, 1.0f);
 
 					ImGui::Separator();
-
-					char sound_name[MAX_PATH] { 0 };
+					
 					ImGui::Text("Sound name (relative to OMSI.exe):");
 					ImGui::InputText("##AnnouncerSoundName", sound_name, MAX_PATH);
 					if (ImGui::Button("Play Sound"))
 					{
-						char* sound_name_ansi = Game::AnsiString<MAX_PATH>(sound_name).string;
-
+						VEH _();
 						OMSI->BulbToys_TSound_Play(sound, sound_name);
 					}
 				}
@@ -77,6 +78,7 @@ namespace announcer
 
 					char sound_name[MAX_PATH] { 0 };
 					MYPRINTF(sound_name, MAX_PATH, "Vehicles\\Announcements\\%s\\%s%s.wav", hof, next_stop, (next == stop_count) ? "_#terminus" : "");
+
 					OMSI->BulbToys_TSound_Play(sound, sound_name);
 				}
 			}
