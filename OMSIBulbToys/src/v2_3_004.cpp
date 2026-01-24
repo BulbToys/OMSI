@@ -287,4 +287,11 @@ static class v2_3_004 : public Game
 			call    TSound_Play
 		}
 	}
+
+	virtual float* BulbToys_GetThrottleIncrementAddress() override final { return reinterpret_cast<float*>(0x7E6CE0); }
+	virtual uintptr_t BulbToys_GetThrottleReleaseInstructionAddress() override final { return 0x7D56C0; }
+	virtual float* BulbToys_GetMaxThrottleAddress() override final { return reinterpret_cast<float*>(0x7D5C0B + 6); }
+	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() override final { return 0x7E65ED; }
+	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() override final { return 0x7D5783; }
+	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() override final { return 0x7D5C33; }
 } _;

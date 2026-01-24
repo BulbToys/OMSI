@@ -190,4 +190,11 @@ public:
 
 	virtual uintptr_t BulbToys_TSound_Create() = 0;
 	virtual void BulbToys_TSound_Play(uintptr_t sound, const char* name) = 0;
+
+	virtual float* BulbToys_GetThrottleIncrementAddress() = 0;
+	virtual uintptr_t BulbToys_GetThrottleReleaseInstructionAddress() = 0;
+	virtual float* BulbToys_GetMaxThrottleAddress() = 0;
+	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() = 0;
+	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() = 0;
+	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() = 0;
 } *OMSI;

@@ -69,4 +69,11 @@ static class v2_2_032 : public Game
 
 	virtual uintptr_t BulbToys_TSound_Create() override final { ASSERT(!"TODO"); return 0; }
 	virtual void BulbToys_TSound_Play(uintptr_t sound, const char* name) override final { ASSERT(!"TODO"); }
+
+	virtual float* BulbToys_GetThrottleIncrementAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetThrottleReleaseInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual float* BulbToys_GetMaxThrottleAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
 } _;
