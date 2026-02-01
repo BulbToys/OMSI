@@ -34,6 +34,8 @@ namespace announcer_sfml
 		return 0;
 	}
 
+	#define DEFAULT_OMSI_ANNOUNCEMENTS_FOLDER "Vehicles\\Announcements"
+
 	char hof_or_map[MAX_PATH] = "(N/A)";
 	char folder[MAX_PATH] = "(N/A)";
 	char subfolder[MAX_PATH] = "(N/A)";
@@ -48,14 +50,15 @@ namespace announcer_sfml
 	};
 	int subfolder_method = SubfolderMethod::HOF;
 
-	const char* terminus_methods[] = { "Both", "Neither", "Current only" };
-	enum TerminusMethod : int
+	const char* first_last_stop_methods[] = { "Both", "Neither", "Current only" };
+	enum FLStopMethod : int
 	{
 		Both = 0,
 		Neither,
 		CurrentOnly
 	};
-	int terminus_method = TerminusMethod::Both;
+	int terminus_method = FLStopMethod::Both;
+	int first_stop_method = FLStopMethod::Neither;
 
 	bool verbose = false;
 
@@ -114,6 +117,11 @@ namespace announcer_sfml
 			if (ImGui::BulbToys_Menu("Announcer"))
 			{
 				ImGui::Text("Announcements folder:");
+				ImGui::SameLine();
+				if (ImGui::Button("Reset to Default##AnnFolderDef"))
+				{
+					MYPRINTF(folder, MAX_PATH, "%s", DEFAULT_OMSI_ANNOUNCEMENTS_FOLDER);
+				}
 				ImGui::InputText("##AnnouncementsFolder", folder, MAX_PATH, ImGuiInputTextFlags_CallbackCharFilter, FilterPathLegal);
 
 				ImGui::Text("Announcements subfolder:");
@@ -134,7 +142,10 @@ namespace announcer_sfml
 				ImGui::SliderFloat("##AnnouncerSFMLVolume", &volume, 0.0f, 100.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
 
 				ImGui::Text("Append '_#terminus' for next/current stop:");
-				ImGui::Combo("##AnnouncementsTerminusMethod", &terminus_method, terminus_methods, IM_ARRAYSIZE(terminus_methods));
+				ImGui::Combo("##AnnouncementsTerminusMethod", &terminus_method, first_last_stop_methods, IM_ARRAYSIZE(first_last_stop_methods));
+
+				ImGui::Text("Announce first next/current stop:");
+				ImGui::Combo("##AnnouncementsFirstMethod", &first_stop_method, first_last_stop_methods, IM_ARRAYSIZE(first_last_stop_methods));
 
 				ImGui::Checkbox("Verbose errors", &verbose);
 
@@ -260,9 +271,9 @@ namespace announcer_sfml
 					prev = next;
 					should_announce_current = true;
 
-					if (next_name && announce_next)
+					if (next_name && announce_next && (next != 0 || (next == 0 && first_stop_method == FLStopMethod::Both)))
 					{
-						bool append_terminus = ((next == stop_count) && (terminus_method == TerminusMethod::Both));
+						bool append_terminus = ((next == stop_count) && (terminus_method == FLStopMethod::Both));
 
 						char full_path[MAX_PATH]{ 0 };
 						FormatFullPath(full_path, MAX_PATH);
@@ -288,9 +299,9 @@ namespace announcer_sfml
 				{
 					should_announce_current = false;
 
-					if (next_name)
+					if (next_name && (next != 0 || (next == 0 && (first_stop_method == FLStopMethod::Both || first_stop_method == FLStopMethod::CurrentOnly))))
 					{
-						bool append_terminus = ((next == stop_count) && ((terminus_method == TerminusMethod::Both) || (terminus_method == TerminusMethod::CurrentOnly)));
+						bool append_terminus = ((next == stop_count) && ((terminus_method == FLStopMethod::Both) || (terminus_method == FLStopMethod::CurrentOnly)));
 
 						char full_path[MAX_PATH]{ 0 };
 						FormatFullPath(full_path, MAX_PATH);
@@ -339,7 +350,7 @@ namespace announcer_sfml
 
 	void Init()
 	{
-		Settings::String<"AnnouncerSFML", "Folder", "Vehicles\\Announcements", MAX_PATH> folder_setting;
+		Settings::String<"AnnouncerSFML", "Folder", DEFAULT_OMSI_ANNOUNCEMENTS_FOLDER, MAX_PATH> folder_setting;
 		strncpy_s(folder, MAX_PATH, folder_setting.Get(), MAX_PATH - 1);
 
 		Settings::String<"AnnouncerSFML", "Subfolder", "Grundorf", MAX_PATH> subfolder_setting;
@@ -375,15 +386,30 @@ namespace announcer_sfml
 		auto new_terminus_method = terminus_method_setting.Get();
 		if (!_stricmp(new_terminus_method, "Both"))
 		{
-			terminus_method = TerminusMethod::Both;
+			terminus_method = FLStopMethod::Both;
 		}
 		else if (!_stricmp(new_terminus_method, "Neither"))
 		{
-			terminus_method = TerminusMethod::Neither;
+			terminus_method = FLStopMethod::Neither;
 		}
 		else if (!_stricmp(new_terminus_method, "CurrentOnly"))
 		{
-			terminus_method = TerminusMethod::CurrentOnly;
+			terminus_method = FLStopMethod::CurrentOnly;
+		}
+
+		Settings::String<"AnnouncerSFML", "FirstStopMethod", "Neither", MAX_PATH> first_stop_method_string;
+		auto new_first_stop_method = first_stop_method_string.Get();
+		if (!_stricmp(new_first_stop_method, "Both"))
+		{
+			first_stop_method = FLStopMethod::Both;
+		}
+		else if (!_stricmp(new_first_stop_method, "Neither"))
+		{
+			first_stop_method = FLStopMethod::Neither;
+		}
+		else if (!_stricmp(new_first_stop_method, "CurrentOnly"))
+		{
+			first_stop_method = FLStopMethod::CurrentOnly;
 		}
 
 		Settings::Bool<"AnnouncerSFML", "NextStop", false> announce_next_setting;
