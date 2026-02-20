@@ -116,6 +116,7 @@
     <ClCompile Include="core\minhook\trampoline.c" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\modules\announcer_sfml.cpp" />
+    <ClCompile Include="src\modules\imgui_test.cpp" />
     <ClCompile Include="src\modules\sixth_sense.cpp" />
     <ClCompile Include="src\modules\test.cpp" />
     <ClCompile Include="src\modules\texman.cpp" />

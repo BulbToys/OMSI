@@ -431,7 +431,7 @@ namespace sixth_sense
 								brightness_color = { 1, 1, 0, 1 }; // yellow
 							}
 
-							ImGui::TextColored(temp_color, "In: %.0f C, %.0f%% (Comfort: %.0f%%)", temp, humidity, temp_comfort);
+							ImGui::TextColored(temp_color, "In: %.1f C, %.0f%% (Comfort: %.0f%%)", temp, humidity, temp_comfort);
 							ImGui::SameLine();
 							ImGui::Text("%s", inline_separator);
 							ImGui::SameLine();
@@ -439,7 +439,7 @@ namespace sixth_sense
 						}
 						else
 						{
-							ImGui::Text("In: %.0f C, %.0f%% (Comfort: %.0f%%) %s Light: %.0f%%", temp, humidity, temp_comfort, inline_separator, brightness);
+							ImGui::Text("In: %.1f C, %.0f%% (Comfort: %.0f%%) %s Light: %.0f%%", temp, humidity, temp_comfort, inline_separator, brightness);
 						}
 					}
 
