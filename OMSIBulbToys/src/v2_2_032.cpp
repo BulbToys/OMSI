@@ -46,6 +46,11 @@ static class v2_2_032 : public Game
 		ASSERT(!"TODO"); return 0x8876086C;
 	}
 
+	virtual void DynArraySetLength(uintptr_t* ptr_to_dyn_array, uintptr_t type_info, int dim_cnt, int length) override final
+	{
+		ASSERT(!"TODO");
+	}
+
 	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) override final { ASSERT(!"TODO"); }
 
 	virtual void BulbToys_ForceOnDepot(bool on_depot) override final { ASSERT(!"TODO"); }
@@ -76,4 +81,7 @@ static class v2_2_032 : public Game
 	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
 	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
 	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() override final { ASSERT(!"TODO"); return 0; }
+
+	virtual uintptr_t BulbToys_GetEligibleSeatsCallAddress() override final { ASSERT(!"TODO"); return 0; }
+	virtual uintptr_t BulbToys_GetEligibleSeatsRTTIAddress() override final { ASSERT(!"TODO"); return 0; }
 } _;

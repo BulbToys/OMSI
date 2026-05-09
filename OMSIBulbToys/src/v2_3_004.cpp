@@ -47,6 +47,21 @@ static class v2_3_004 : public Game
 		return reinterpret_cast<func>(0x568060)(pDevice, pSrcFile, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 	}
 
+	
+	virtual void DynArraySetLength(uintptr_t* ptr_to_dyn_array, uintptr_t type_info, int dim_cnt, int new_len) override final
+	{
+		constexpr uintptr_t DynArraySetLengthAddress = 0x40A9B0;
+
+		__asm
+		{
+			push  new_len
+			mov   eax, ptr_to_dyn_array
+			mov   edx, type_info
+			mov   ecx, dim_cnt
+			call  DynArraySetLengthAddress
+		}
+	}
+
 	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) override final
 	{
 		Unprotect _(0x7BBC47, 0x7F9092 - 0x7BBC47);
@@ -294,4 +309,7 @@ static class v2_3_004 : public Game
 	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() override final { return 0x7E65ED; }
 	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() override final { return 0x7D5783; }
 	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() override final { return 0x7D5C33; }
+
+	virtual uintptr_t BulbToys_GetEligibleSeatsCallAddress() override final { return 0x7E95D7; }
+	virtual uintptr_t BulbToys_GetEligibleSeatsRTTIAddress() override final { return 0x7E93BC; }
 } _;

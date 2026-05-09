@@ -121,6 +121,32 @@ public:
 		}
 	};
 
+	struct Tfreeseats
+	{
+		int index;
+		int offset;
+		uintptr_t vehicle;
+	};
+
+	struct Vec
+	{
+		float x; float y; float z;
+	};
+
+	struct Quat
+	{
+		float x; float y; float z; float w;
+	};
+
+	struct TSeat
+	{
+		Vec position;
+		Quat rotation;
+		char flag;
+		float height;
+		char unk[4];
+	};
+
 	/* ===== C O N S T A N T S ===== */
 
 	virtual LPVOID BulbToys_GetD3DDevice9() = 0;
@@ -152,6 +178,8 @@ public:
 		void* pPalette,
 		void* ppTexture
 	) = 0;
+
+	virtual void DynArraySetLength(uintptr_t* ptr_to_dyn_array, uintptr_t type_info, int dim_cnt, int length) = 0;
 
 	/* ===== H E L P E R   F U N C S ===== */
 
@@ -197,4 +225,7 @@ public:
 	virtual uintptr_t BulbToys_GetBrakesInstructionAddress() = 0;
 	virtual uintptr_t BulbToys_GetBrakesReleaseInstructionAddress() = 0;
 	virtual uintptr_t BulbToys_GetClutchReleaseInstructionAddress() = 0;
+
+	virtual uintptr_t BulbToys_GetEligibleSeatsCallAddress() = 0;
+	virtual uintptr_t BulbToys_GetEligibleSeatsRTTIAddress() = 0;
 } *OMSI;
