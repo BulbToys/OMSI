@@ -51,6 +51,12 @@ static class v2_2_032 : public Game
 		ASSERT(!"TODO");
 	}
 
+	virtual float RandomCentered(float spread, float center) override final
+	{
+		ASSERT(!"TODO");
+		return NAN;
+	}
+
 	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) override final { ASSERT(!"TODO"); }
 
 	virtual void BulbToys_ForceOnDepot(bool on_depot) override final { ASSERT(!"TODO"); }

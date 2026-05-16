@@ -181,6 +181,8 @@ public:
 
 	virtual void DynArraySetLength(uintptr_t* ptr_to_dyn_array, uintptr_t type_info, int dim_cnt, int length) = 0;
 
+	virtual float RandomCentered(float spread, float center) = 0;
+
 	/* ===== H E L P E R   F U N C S ===== */
 
 	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) = 0;

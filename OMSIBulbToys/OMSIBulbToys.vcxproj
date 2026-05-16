@@ -115,6 +115,7 @@
     <ClCompile Include="core\minhook\hook.c" />
     <ClCompile Include="core\minhook\trampoline.c" />
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\modules\ai.cpp" />
     <ClCompile Include="src\modules\announcer_sfml.cpp" />
     <ClCompile Include="src\modules\humans.cpp" />
     <ClCompile Include="src\modules\imgui_test.cpp" />

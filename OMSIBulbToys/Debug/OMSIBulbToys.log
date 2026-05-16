@@ -1,0 +1,87 @@
+﻿  Could Not Find C:\Projects\BulbToys\OMSI\OMSIBulbToys\Debug\version.obj
+  gui.cpp
+  hooks.cpp
+  io.cpp
+  main.cpp
+  modules.cpp
+  my_imgui.cpp
+  settings.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\gui.cpp(941,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  utils.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\hooks.cpp(90,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\io.cpp(607,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\main.cpp(200,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\modules.cpp(101,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\my_imgui.cpp(177,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\settings.cpp(139,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\utils.cpp(301,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  version.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\bulbtoys\version.cpp(14,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui.cpp(1787,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui.cpp(2532,9): warning C4005: 'va_copy': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui.cpp(2530,9):
+      see previous definition of 'va_copy'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui.cpp(14628,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_demo.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(136,9): warning C4005: 'IM_NEWLINE': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(134,9):
+      see previous definition of 'IM_NEWLINE'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(153,9): warning C4005: 'IM_PRId64': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(150,9):
+      see previous definition of 'IM_PRId64'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(154,9): warning C4005: 'IM_PRIu64': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(151,9):
+      see previous definition of 'IM_PRIu64'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(170,9): warning C4005: 'IMGUI_CDECL': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(168,9):
+      see previous definition of 'IMGUI_CDECL'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_demo.cpp(8046,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_draw.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_draw.cpp(121,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_draw.cpp(145,10): error C2006: '#include': expected "FILENAME" or <FILENAME>
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_draw.cpp(4175,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_impl_dx9.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_impl_dx9.cpp(64,9): warning C4005: 'IMGUI_COL_TO_DX9_ARGB': macro redefinition
+      C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_impl_dx9.cpp(62,9):
+      see previous definition of 'IMGUI_COL_TO_DX9_ARGB'
+  
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_impl_dx9.cpp(380,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_impl_win32.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_impl_win32.cpp(827,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_tables.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_tables.cpp(4118,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  imgui_widgets.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\core\imgui\imgui_widgets.cpp(8556,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  dllmain.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\dllmain.cpp(92,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  ai.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\ai.cpp(176,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  announcer_sfml.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\announcer_sfml.cpp(439,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  humans.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\humans.cpp(269,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  Generating Code...
+  Compiling...
+  imgui_test.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\imgui_test.cpp(60,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  sixth_sense.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\sixth_sense.cpp(788,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  test.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\test.cpp(32,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  texman.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\texman.cpp(631,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  vehicle.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\modules\vehicle.cpp(357,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  v2_2_032.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\v2_2_032.cpp(88,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  v2_3_004.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\v2_3_004.cpp(316,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  veh.cpp
+C:\Projects\BulbToys\OMSI\OMSIBulbToys\src\veh.cpp(54,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  Generating Code...

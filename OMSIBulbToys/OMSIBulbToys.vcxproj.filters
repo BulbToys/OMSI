@@ -111,6 +111,9 @@
     <ClCompile Include="src\modules\humans.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\modules\ai.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="OMSIBulbToys.opl" />

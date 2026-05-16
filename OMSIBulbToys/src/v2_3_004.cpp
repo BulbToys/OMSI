@@ -62,6 +62,11 @@ static class v2_3_004 : public Game
 		}
 	}
 
+	virtual float RandomCentered(float spread, float center) override final
+	{
+		return reinterpret_cast<float(__stdcall*)(float, float)>(0x7F0B9C)(spread, center);
+	}
+
 	virtual void BulbToys_ForceMipLevelsPatch(bool unpatch, void* func) override final
 	{
 		Unprotect _(0x7BBC47, 0x7F9092 - 0x7BBC47);

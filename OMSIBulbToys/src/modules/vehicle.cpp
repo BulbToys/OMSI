@@ -158,71 +158,6 @@ namespace vehicle
 		}
 	}
 
-	char pass_status[256]{ 0 };
-
-	int PreferSitting(uintptr_t* eligible_seats_ptr)
-	{
-		auto eligible_seats = *eligible_seats_ptr;
-
-		std::vector<Game::Tfreeseats> new_eligible_seats;
-
-		auto len = OMSI->BulbToys_ListLength(eligible_seats);
-		for (int i = 0; i < len; i++)
-		{
-			auto eligible_seat = reinterpret_cast<Game::Tfreeseats*>(eligible_seats + i * sizeof(Game::Tfreeseats));
-
-			auto vehicle = eligible_seat->vehicle;
-			if (vehicle)
-			{
-				auto road_vehicle = Read<uintptr_t>(vehicle + 0x710);
-				if (road_vehicle)
-				{
-					auto passenger_cabin = Read<uintptr_t>(road_vehicle + 0x190);
-					if (passenger_cabin)
-					{
-						auto seats = Read<uintptr_t>(passenger_cabin + 0x4);
-						auto index = eligible_seat->index;
-
-						if (OMSI->BulbToys_BoundCheck(seats, index))
-						{
-							auto seat = reinterpret_cast<Game::TSeat*>(seats + index * sizeof(Game::TSeat));
-
-							if (seat->height > 0.0f)
-							{
-								Game::Tfreeseats new_eligible_seat = *eligible_seat;
-								new_eligible_seats.push_back(new_eligible_seat);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		int new_len = new_eligible_seats.size();
-
-		MYPRINTF(pass_status, 256, "Eligible seats: %08X\nLen: %d\nNewLen: %d)", eligible_seats, len, new_len);
-
-		if (new_len > 0)
-		{
-			std::copy(new_eligible_seats.begin(), new_eligible_seats.end(), reinterpret_cast<Game::Tfreeseats*>(eligible_seats));
-			OMSI->DynArraySetLength(eligible_seats_ptr, OMSI->BulbToys_GetEligibleSeatsRTTIAddress(), 1, new_len);
-			return new_len;
-		}
-
-		return len;
-	}
-
-	void __declspec(naked) PreferSittingHook()
-	{
-		__asm
-		{
-			push  eax
-			call  PreferSitting
-			add   esp, 4
-			retn
-		}
-	}
-
 	struct VehiclePanel : IPanel
 	{
 		virtual bool Draw() override final
@@ -246,29 +181,6 @@ namespace vehicle
 					ImGui::Text("Dirt");
 					ImGui::SliderFloat("##VehicleDirt", dirt, 0, 1);
 				}
-
-				ImGui::Separator();
-
-				static bool prefer_sitting = false;
-				if (ImGui::Checkbox("Passengers prefer to sit", &prefer_sitting))
-				{
-					// TODO FIXME add to omsi offsets
-					auto address = OMSI->BulbToys_GetEligibleSeatsCallAddress();
-					Unprotect _(address - 3, 6 + 3);
-
-					if (prefer_sitting)
-					{
-						Patch<uint8_t>(address - 3, 0x8D);
-						PatchCall(address, PreferSittingHook);
-					}
-					else
-					{
-						Unpatch(address);
-						Unpatch(address - 3);
-					}
-				}
-
-				ImGui::Text("%s", pass_status);
 
 				ImGui::Separator();
 
