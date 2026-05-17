@@ -135,7 +135,7 @@ namespace humans
 									ImGui::Text("Voice: %s", (voice ? voice : "(null)"));
 
 									ImGui::Text("Age: %.02f", Read<float>(human + 0x268));
-									ImGui::Text("Height: %.02f", Read<float>(human + 0x268)); //FIXME
+									ImGui::Text("Height: %.02f", Read<float>(human + 0x270));
 								}
 
 								ImGui::Text("-----");

@@ -1,10 +1,14 @@
 #include "../../core/bulbtoys.h"
 #include "../omsi.h"
 
+#include <random>
+
 namespace ai
 {
 	namespace passenger
 	{
+		char status[1024] = { 0 };
+
 		float max_chance = 80.0f;
 		float min_chance = 40.0f;
 
@@ -19,24 +23,31 @@ namespace ai
 
 		float abs_random_modifier = 10.0f;
 
-		int PreferSitting(uintptr_t* eligible_seats_ptr, uintptr_t human_seat_nr_bus)
+		int PreferSitting(uintptr_t* eligibles_ptr, uintptr_t human_seat_nr_bus)
 		{
-			auto human = human_seat_nr_bus - 0x610;
+			// if there's 0 or 1 seat left, don't bother
+			auto len = OMSI->BulbToys_ListLength(*eligibles_ptr);
+			if (len < 2)
+			{
+				return len;
+			}
 
-			auto len = OMSI->BulbToys_ListLength(*eligible_seats_ptr);
-			auto eligible_seats = reinterpret_cast<Game::Tfreeseats*>(*eligible_seats_ptr);
+			// offset from &human->SeatNrBus back to base human pointer
+			auto human_inst = human_seat_nr_bus - 0x610;
 
-			std::vector<Game::Tfreeseats> new_eligible_seats(&eligible_seats[0], &eligible_seats[len - 1]);
+			auto eligibles = reinterpret_cast<Game::Tfreeseats*>(*eligibles_ptr);
 
-			// sort by distance to entrance todo?
+			std::vector<Game::Tfreeseats> new_eligible_seats;
+			std::vector<Game::Tfreeseats> new_eligible_stands;
 
-			int free_seats = 0;
 			int total_seats = 0;
 			std::vector<uintptr_t> checked_vehicles;
 
-			for (const auto& it : new_eligible_seats)
+			for (int i = 0; i < len; i++)
 			{
-				auto vehicle = it.vehicle;
+				auto eligible = eligibles[i];
+
+				auto vehicle = eligible.vehicle;
 				if (!vehicle)
 				{
 					continue;
@@ -55,22 +66,26 @@ namespace ai
 				}
 
 				auto seats = Read<uintptr_t>(passenger_cabin + 0x4);
-				if (checked_vehicles.end() != std::find(checked_vehicles.begin(), checked_vehicles.end(), vehicle))
+
+				// if we haven't checked this vehicle yet (each articulated part is its own vehicle)
+				if (checked_vehicles.end() == std::find(checked_vehicles.begin(), checked_vehicles.end(), vehicle))
 				{
+					// don't check this vehicle again
 					checked_vehicles.push_back(vehicle);
 
-					for (int i = 0; i < OMSI->BulbToys_ListLength(seats); i++)
+					for (int j = 0; j < OMSI->BulbToys_ListLength(seats); j++)
 					{
-						auto seat = reinterpret_cast<Game::TSeat*>(seats + i * sizeof(Game::TSeat));
+						auto seat = reinterpret_cast<Game::TSeat*>(seats + j * sizeof(Game::TSeat));
 
 						if (seat->height > 0.0f)
 						{
+							// add to total count of seats in entire bus
 							total_seats++;
 						}
 					}
 				}
 
-				auto index = it.index;
+				auto index = eligible.index;
 				if (!OMSI->BulbToys_BoundCheck(seats, index))
 				{
 					continue;
@@ -80,16 +95,96 @@ namespace ai
 
 				if (seat->height > 0.0f)
 				{
-					free_seats++;
+					new_eligible_seats.push_back(eligible);
+				}
+				else
+				{
+					new_eligible_stands.push_back(eligible);
 				}
 			}
 
-			if (free_seats)
+			auto free_seats = new_eligible_seats.size();
+			auto free_stands = new_eligible_stands.size();
+			if (free_seats == 0 || free_stands == 0)
 			{
-				float sit_chance = min_chance + ((max_chance - min_chance) * (free_seats / total_seats));
+				// don't bother calculating sitting chance, we don't have a choice anyways (forced to sit or stand)
+				return len;
+			}
 
-				// trip length modifier
+			// scale initial sitting chance based on the amount of free seats in the bus
+			float sit_chance = min_chance + ((max_chance - min_chance) * ((float)free_seats / (float)total_seats));
 
+			// apply modifier based on estimated trip length, IN SECONDS
+			auto est_travel_time = NAN;
+
+			// get primary vehicle
+			auto vehicle = Read<uintptr_t>(checked_vehicles[0] + 0x4D0);
+			auto target_stop_name = Read<char*>(human_inst + 0x5F4);
+			if (vehicle && target_stop_name && strlen(target_stop_name))
+			{
+				auto ttman = reinterpret_cast<Game::TTimeTableMan*>(OMSI->BulbToys_GetTimeTableManager());
+				if (ttman && ttman->Trips)
+				{
+					auto trip = Read<int>(vehicle + 0x66C);
+					if (OMSI->BulbToys_BoundCheck(reinterpret_cast<uintptr_t>(ttman->Trips), trip))
+					{
+						auto profile = Read<int>(vehicle + 0x67C);
+						if (ttman->Trips[trip].profiles && OMSI->BulbToys_BoundCheck(reinterpret_cast<uintptr_t>(ttman->Trips[trip].profiles), profile))
+						{
+							auto bus_stops = ttman->Trips[trip].busstops;
+							if (bus_stops)
+							{
+								auto stop_index = Read<int>(vehicle + 0x680);
+
+								for (int i = stop_index + 1; i < OMSI->BulbToys_ListLength(reinterpret_cast<uintptr_t>(bus_stops)); i++)
+								{
+									auto bus_stop = bus_stops[i];
+
+									auto stop_name_wide = bus_stop.name;
+									if (!stop_name_wide)
+									{
+										continue;
+									}
+
+									auto stop_name_len = ::WideStringToString(stop_name_wide, -1);
+									if (!stop_name_len)
+									{
+										continue;
+									}
+
+									char* stop_name = new char[stop_name_len];
+									::WideStringToString(stop_name_wide, stop_name_len, stop_name, stop_name_len);
+
+									if (!strncmp(stop_name, target_stop_name, stop_name_len))
+									{
+										est_travel_time = ttman->Trips[trip].profiles[profile].stop_times[i].arr_time - ttman->Trips[trip].profiles[profile].stop_times[stop_index].arr_time;
+										delete[] stop_name;
+										break;
+									}
+
+									delete[] stop_name;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (!isnan(est_travel_time))
+			{
+				float short_trip_secs = short_trip * 60.0f;
+
+				float travel_time_leftover = short_trip_secs - est_travel_time;
+				if (travel_time_leftover > 0.0f)
+				{
+					sit_chance -= short_modifier * (travel_time_leftover / short_trip_secs);
+				}
+			}
+
+			// apply modifier based on age
+			auto human = Read<uintptr_t>(human_inst + 0x5B0);
+			if (human)
+			{
 				auto age = Read<float>(human + 0x268);
 				if (age < younger_than)
 				{
@@ -99,30 +194,70 @@ namespace ai
 				{
 					sit_chance += old_modifier;
 				}
-
-				sit_chance = OMSI->RandomCentered(abs_random_modifier, sit_chance);
-
-				if (sit_chance > 100.0f)
-				{
-					sit_chance = 100.0f;
-				}
-				else if (sit_chance < 0.0f)
-				{
-					sit_chance = 0.0f;
-				}
-
-				// determine seat(s) based on chance
 			}
 
-			int new_len = new_eligible_seats.size();
-			if (new_len > 0 && new_len < len)
+			// apply absolute randomness modifier
+			sit_chance = OMSI->RandomCentered(abs_random_modifier, sit_chance);
+			if (sit_chance > 100.0f)
 			{
-				std::copy(new_eligible_seats.begin(), new_eligible_seats.end(), eligible_seats);
-				OMSI->DynArraySetLength(eligible_seats_ptr, OMSI->BulbToys_GetEligibleSeatsRTTIAddress(), 1, new_len);
-				return new_len;
+				sit_chance = 100.0f;
+			}
+			else if (sit_chance < 0.0f)
+			{
+				sit_chance = 0.0f;
 			}
 
-			return len;
+			auto sit_factor = sit_chance / 100.0f;
+
+			float reserved_seats = free_seats;
+			float reserved_stands = (free_seats / sit_factor) - reserved_seats;
+
+			// estimated too many stands, can't fulfill promise, so calculate reserved stands first instead (infinity is okay here)
+			if (reserved_stands > (float)free_stands)
+			{
+				reserved_stands = free_stands;
+				reserved_seats = (reserved_stands / (1.0f - sit_factor)) - reserved_stands;
+			}
+
+			std::random_device rd;
+			std::mt19937 rng(rd());
+			std::vector<Game::Tfreeseats> new_eligibles;
+			std::sample(new_eligible_seats.begin(), new_eligible_seats.end(), std::back_inserter(new_eligibles), (int)round(reserved_seats), rng);
+			std::sample(new_eligible_stands.begin(), new_eligible_stands.end(), std::back_inserter(new_eligibles), (int)round(reserved_stands), rng);
+
+			auto new_len = new_eligibles.size();
+			std::copy(new_eligibles.begin(), new_eligibles.end(), eligibles);
+			OMSI->DynArraySetLength(eligibles_ptr, OMSI->BulbToys_GetEligibleSeatsRTTIAddress(), 1, new_len);
+
+			MYPRINTF(
+				status,
+				1024,
+				"- Length: %d\n"
+				"- Human: %08X\n"
+				"- Age: %.02f\n"
+				"- Est. travel time: %.02f min\n"
+				"- Checked vehicles: %u\n"
+				"- Free seats: %u\n"
+				"- Free stands: %u\n"
+				"- Precalc sit chance: %.02f\n"
+				"- Calculated sit chance: %.02f\n"
+				"- Reserved seats: %.02f\n"
+				"- Reserved stands: %.02f\n"
+				"- New length: %u",
+				len,
+				human,
+				human? Read<float>(human + 0x268) : NAN,
+				est_travel_time / 60.0f,
+				checked_vehicles.size(),
+				free_seats,
+				free_stands,
+				min_chance + ((max_chance - min_chance) * ((float)free_seats / (float)total_seats)),
+				sit_chance,
+				reserved_seats,
+				reserved_stands,
+				new_len);
+
+			return new_len;
 		}
 
 		void __declspec(naked) PreferSittingHook()
@@ -132,7 +267,7 @@ namespace ai
 				push  [ebp - 8]
 				push  eax
 				call  PreferSitting
-				add   esp, 4
+				add   esp, 8
 				retn
 			}
 		}
@@ -149,7 +284,7 @@ namespace ai
 			if (ImGui::BulbToys_Menu("AI"))
 			{
 				static bool prefer_sitting = false;
-				if (ImGui::Checkbox("Passengers prefer to sit", &prefer_sitting))
+				if (ImGui::Checkbox("Override passenger sitting AI", &prefer_sitting))
 				{
 					// TODO FIXME add to omsi offsets
 					auto address = OMSI->BulbToys_GetEligibleSeatsCallAddress();
@@ -167,7 +302,44 @@ namespace ai
 					}
 				}
 
+				ImGui::Text("Status:\n%s", passenger::status);
+
 				ImGui::Separator();
+
+				ImGui::Text("Maximum sitting chance (%%):");
+				ImGui::SliderFloat("##AIPaxMaxChance", &passenger::max_chance, -100.0f, 200.0f);
+
+				ImGui::Text("Minimum sitting chance (%%):");
+				ImGui::SliderFloat("##AIPaxMinChance", &passenger::min_chance, -100.0f, 200.0f);
+
+				ImGui::Separator();
+
+				ImGui::Text("Stand if trip is shorter than (min):");
+				ImGui::SliderFloat("##AIPaxShortTrip", &passenger::short_trip, 0.0f, 10.0f);
+
+				ImGui::Text("Short trip standing chance modifier (%%):");
+				ImGui::SliderFloat("##AIPaxShortMod", &passenger::short_modifier, 0.0f, 100.0f);
+
+				ImGui::Separator();
+
+				ImGui::Text("Sit if younger than (years old):");
+				ImGui::SliderFloat("##AIPaxYounger", &passenger::younger_than, 0.0f, 18.0f);
+
+				ImGui::Text("Young sitting chance modifier (%%):");
+				ImGui::SliderFloat("##AIPaxYoungMod", &passenger::young_modifier, -100.0f, 100.0f);
+
+				ImGui::Separator();
+
+				ImGui::Text("Sit if older than (years old):");
+				ImGui::SliderFloat("##AIPaxOlder", &passenger::older_than, 50.0f, 120.0f);
+
+				ImGui::Text("Old sitting chance modifier (%%):");
+				ImGui::SliderFloat("##AIPaxOldMod", &passenger::old_modifier, -100.0f, 100.0f);
+
+				ImGui::Separator();
+
+				ImGui::Text("Absolute random modifier (+/- |%%|):");
+				ImGui::SliderFloat("##AIPaxAbsRndMod", &passenger::abs_random_modifier, 0.0f, 100.0f);
 			}
 
 			return true;

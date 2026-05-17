@@ -147,6 +147,120 @@ public:
 		char unk[4];
 	};
 
+	struct TTTStopTime
+	{
+		float arr_time;
+		float dep_time;
+		bool arr_time_man;
+		bool dep_time_man;
+		char stopping;
+	};
+
+	struct TTTProfile
+	{
+		char* name;
+		float time_all;
+		TTTStopTime* stop_times;
+		void* TrackEntryTime;
+		bool servicetrip;
+	};
+
+	struct TTTBusstop
+	{
+		wchar_t* name;
+		wchar_t* name_zusatz;
+		int kachel;
+		unsigned int IDCode_formal;
+		unsigned int IDCode_real;
+		int index;
+		int index_ownlist;
+		void* index_laternatives;
+		float Preset_Aussteiger;
+		char pathindex[8];
+		int trackentry;
+		bool invalide;
+		float x_path;
+		float dist_relpath;
+		float dist;
+	};
+
+	struct TTTTrip
+	{
+		char* filename;
+		int chrono_origin;
+		char* target;
+		char* linie;
+		bool trainrev;
+		char invalide;
+		TTTProfile* profiles;
+		TTTBusstop* busstops;
+		char* Trackname;
+		int Trackindex;
+		void* StnLinkList;
+	};
+
+	struct TTTTourValid
+	{
+		bool Mon;
+		bool Tue;
+		bool Wed;
+		bool Thu;
+		bool Fri;
+		bool Sat;
+		bool Sun;
+		bool Hol;
+		bool Hols;
+		bool NoHols;
+	};
+
+	struct TTTTourEntry
+	{
+		char* Trip;
+		int TripIndex;
+		int Profile;
+		float StartTime;
+		float EndTime;
+		bool SmoothTrans;
+	};
+
+	struct TTTTour
+	{
+		char* name;
+		char* aigroup;
+		int aitype;
+		int aigroupindex;
+		char* vehicle_nr_reservation;
+		int* vehicle_indizes;
+		bool hasNormalVeh;
+		int TagErledigt;
+		TTTTourValid validOn;
+		bool invalide;
+		TTTTourEntry* entrys;
+	};
+
+	struct TTTLine
+	{
+		char* filename;
+		bool userallowed;
+		char priority;
+		TTTTour* tours;
+		int chrono_origin;
+	};
+
+	struct TTimeTableMan
+	{
+		void* __vftable;
+		bool invalid;
+		void* Tracks;
+		TTTTrip* Trips;
+		TTTBusstop* BusstopList;
+		void* StnLinks;
+		TTTLine* Lines;
+		bool AllStationIndicesResetted;
+		void* RVFiles;
+		void* noRVNumbers;
+	};
+
 	/* ===== C O N S T A N T S ===== */
 
 	virtual LPVOID BulbToys_GetD3DDevice9() = 0;

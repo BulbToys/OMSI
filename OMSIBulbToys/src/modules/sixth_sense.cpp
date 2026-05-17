@@ -221,259 +221,279 @@ namespace sixth_sense
 			{
 				if (ImGui::BulbToys_Overlay_BeginTable("VehicleInfo"))
 				{
-					if (vehicle::basic_info)
-					{
-						auto ai = Read<bool>(vehicle + 0x624);
-						auto speed = Read<float>(vehicle + 0x1D4) * 3.6f;
-						auto fuel = Read<float>(vehicle + 0x7CC) * 100.0f;
-						auto mileage = Read<double>(vehicle + 0x430);
-						auto skidding = !(Read<bool>(vehicle + 0x1D8));
+					// first vehicle = no work ?
+					bool first_veh = true;
 
-						if (vehicle::colors)
+					uintptr_t vehicle_iter = Read<uintptr_t>(vehicle + 0x4D0);
+					while (vehicle_iter)
+					{
+						if (first_veh)
 						{
-							if (ai)
-							{
-								ImGui::TextColored({ 1, 1, 0, 1 }, "AI");
-								ImGui::SameLine();
-								ImGui::Text("%s", inline_separator);
-								ImGui::SameLine();
-							}
-							ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km", speed, inline_separator, fuel, inline_separator, mileage);
-							if (skidding)
-							{
-								ImGui::SameLine();
-								ImGui::TextColored({ 1, 1, 0, 1 }, "[Skidding!]");
-							}
+							first_veh = false;
 						}
 						else
 						{
-							if (ai)
-							{
-								ImGui::Text("AI %s", inline_separator);
-								ImGui::SameLine();
-							}
-							ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km%s", speed, inline_separator, fuel, inline_separator, mileage, skidding ? " [Skidding!]" : "");
-						}
-					}
-
-					if (vehicle::pedals)
-					{
-						auto gas = Read<float>(vehicle + 0x5DC);
-						auto brakes = Read<float>(vehicle + 0x5E0);
-						auto clutch = Read<float>(vehicle + 0x5E4);
-
-						if (vehicle::pedals_progress_bars)
-						{
-							ImGui::Text("G:");
-							ImGui::SameLine();
-							ImGui::ProgressBar(gas, { 250, 0 });
-
-							ImGui::Text("B:");
-							ImGui::SameLine();
-							ImGui::ProgressBar(brakes, { 250, 0 });
-
-							ImGui::Text("C:");
-							ImGui::SameLine();
-							ImGui::ProgressBar(clutch, { 250, 0 });
-						}
-						else
-						{
-							ImGui::Text("G: %3.0f%% %s B: %3.0f%% %s C: %3.0f%%", gas * 100.f, inline_separator, brakes * 100.f, inline_separator, clutch * 100.f);
-						}
-					}
-
-					if (vehicle::weather)
-					{
-						auto temp = Read<float>(vehicle + 0x5FC);
-						auto humidity = Read<float>(vehicle + 0x600) * 100.f;
-						auto brightness_inside = Read<float>(vehicle + 0x638) * 100.f;
-						auto brightness_outside = Read<float>(weather + 0xB0);
-
-						auto brightness = 100.f;
-						if (brightness_inside < 0.5f)
-						{
-							if (brightness_outside < 0.2f)
-							{
-								brightness = 0.f;
-							}
-							else if (brightness_outside < 0.5f)
-							{
-								brightness -= ((1.0f / (brightness_outside)) - 2.0f) * (100.0f / 3.0f);
-							}
+							ImGui::Text(" ");
 						}
 
-						auto temp_out = Read<float>(weather + 0x20);
+						uintptr_t vehicle = vehicle_iter;
 
-						// 1.0-2.0 25-34
-
-						// in > 25 (0%)
-						// in > 34 (100%)
-						// - in > out + 3 (0%)
-						// - in > out + 7 (100%)
-						// --- too hot
-
-						// in < 25
-						// - in > out/2 + 20 (0%)
-						// - in > out/2 + 29 (100%)
-						// --- too hot
-
-						// in < 8 (0%)
-						// in < 17 (100%)
-						// - in < out + 5 (0%)
-						// - in < out + 9 (100%)
-						// --- too cold
-
-						// in < out - 10 (0%)
-						// in < out - 19 (100%)
-						// --- too cold
-
-						auto temp_comfort = 100.f;
-
-						auto temp_comfort_penalty = 0.0f;
-						auto temp_comfort_penalty_coeff = 1.0f;
-
-						if (temp > 25.0f)
+						if (vehicle::basic_info)
 						{
-							if (temp > 34.0f)
+							auto ai = Read<bool>(vehicle + 0x624);
+							auto speed = Read<float>(vehicle + 0x1D4) * 3.6f;
+							auto fuel = Read<float>(vehicle + 0x7CC) * 100.0f;
+							auto mileage = Read<double>(vehicle + 0x430);
+							auto skidding = !(Read<bool>(vehicle + 0x1D8));
+
+							if (vehicle::colors)
 							{
-								temp_comfort_penalty_coeff = 2.0f;
+								if (ai)
+								{
+									ImGui::TextColored({ 1, 1, 0, 1 }, "AI");
+									ImGui::SameLine();
+									ImGui::Text("%s", inline_separator);
+									ImGui::SameLine();
+								}
+								ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km", speed, inline_separator, fuel, inline_separator, mileage);
+								if (skidding)
+								{
+									ImGui::SameLine();
+									ImGui::TextColored({ 1, 1, 0, 1 }, "[Skidding!]");
+								}
 							}
 							else
 							{
-								temp_comfort_penalty_coeff = 1.0f + (temp - 25.0f) / 9.0f;
-							}
-
-							if (temp > temp_out + 3.0f)
-							{
-								if (temp > temp_out + 7.0f)
+								if (ai)
 								{
-									temp_comfort_penalty -= 50.0f;
+									ImGui::Text("AI %s", inline_separator);
+									ImGui::SameLine();
 								}
-								else
-								{
-									temp_comfort_penalty -= 50.0f * ((temp - temp_out - 3.0f) / 4.0f);
-								}
+								ImGui::Text("%-3.0f km/h %s %.0f%% %s %.02lf km%s", speed, inline_separator, fuel, inline_separator, mileage, skidding ? " [Skidding!]" : "");
 							}
 						}
 
-						if (temp < 25.0f)
+						if (vehicle::pedals)
 						{
-							if (temp > temp_out / 2.0f + 20.0f)
+							auto gas = Read<float>(vehicle + 0x5DC);
+							auto brakes = Read<float>(vehicle + 0x5E0);
+							auto clutch = Read<float>(vehicle + 0x5E4);
+
+							if (vehicle::pedals_progress_bars)
 							{
-								if (temp > temp_out / 2.0f + 29.0f)
+								ImGui::Text("G:");
+								ImGui::SameLine();
+								ImGui::ProgressBar(gas, { 250, 0 });
+
+								ImGui::Text("B:");
+								ImGui::SameLine();
+								ImGui::ProgressBar(brakes, { 250, 0 });
+
+								ImGui::Text("C:");
+								ImGui::SameLine();
+								ImGui::ProgressBar(clutch, { 250, 0 });
+							}
+							else
+							{
+								ImGui::Text("G: %3.0f%% %s B: %3.0f%% %s C: %3.0f%%", gas * 100.f, inline_separator, brakes * 100.f, inline_separator, clutch * 100.f);
+							}
+						}
+
+						if (vehicle::weather)
+						{
+							auto temp = Read<float>(vehicle + 0x5FC);
+							auto humidity = Read<float>(vehicle + 0x600) * 100.f;
+							auto brightness_inside = Read<float>(vehicle + 0x638) * 100.f;
+							auto brightness_outside = Read<float>(weather + 0xB0);
+
+							auto brightness = 100.f;
+							if (brightness_inside < 0.5f)
+							{
+								if (brightness_outside < 0.2f)
+								{
+									brightness = 0.f;
+								}
+								else if (brightness_outside < 0.5f)
+								{
+									brightness -= ((1.0f / (brightness_outside)) - 2.0f) * (100.0f / 3.0f);
+								}
+							}
+
+							auto temp_out = Read<float>(weather + 0x20);
+
+							// 1.0-2.0 25-34
+
+							// in > 25 (0%)
+							// in > 34 (100%)
+							// - in > out + 3 (0%)
+							// - in > out + 7 (100%)
+							// --- too hot
+
+							// in < 25
+							// - in > out/2 + 20 (0%)
+							// - in > out/2 + 29 (100%)
+							// --- too hot
+
+							// in < 8 (0%)
+							// in < 17 (100%)
+							// - in < out + 5 (0%)
+							// - in < out + 9 (100%)
+							// --- too cold
+
+							// in < out - 10 (0%)
+							// in < out - 19 (100%)
+							// --- too cold
+
+							auto temp_comfort = 100.f;
+
+							auto temp_comfort_penalty = 0.0f;
+							auto temp_comfort_penalty_coeff = 1.0f;
+
+							if (temp > 25.0f)
+							{
+								if (temp > 34.0f)
+								{
+									temp_comfort_penalty_coeff = 2.0f;
+								}
+								else
+								{
+									temp_comfort_penalty_coeff = 1.0f + (temp - 25.0f) / 9.0f;
+								}
+
+								if (temp > temp_out + 3.0f)
+								{
+									if (temp > temp_out + 7.0f)
+									{
+										temp_comfort_penalty -= 50.0f;
+									}
+									else
+									{
+										temp_comfort_penalty -= 50.0f * ((temp - temp_out - 3.0f) / 4.0f);
+									}
+								}
+							}
+
+							if (temp < 25.0f)
+							{
+								if (temp > temp_out / 2.0f + 20.0f)
+								{
+									if (temp > temp_out / 2.0f + 29.0f)
+									{
+										temp_comfort_penalty -= 100.0f;
+									}
+									else
+									{
+										temp_comfort_penalty -= 100.0f * ((temp - temp_out / 2.0f - 20.0f) / 9.0f);
+									}
+								}
+							}
+
+							if (temp < 17.0f)
+							{
+								if (temp < 8.0f)
+								{
+									temp_comfort_penalty_coeff = 2.0f;
+								}
+								else
+								{
+									temp_comfort_penalty_coeff = 1.0f + (temp - 17.0f) / -9.0f;
+								}
+
+								if (temp < temp_out + 9.0f)
+								{
+									if (temp < temp_out + 5.0f)
+									{
+										temp_comfort_penalty -= 50.0f;
+									}
+									else
+									{
+										temp_comfort_penalty -= 50.0f * ((temp - temp_out - 9.0f) / -4.0f);
+									}
+								}
+							}
+
+							if (temp < temp_out - 10.0f)
+							{
+								if (temp < temp_out - 19.0f)
 								{
 									temp_comfort_penalty -= 100.0f;
 								}
 								else
 								{
-									temp_comfort_penalty -= 100.0f * ((temp - temp_out / 2.0f - 20.0f) / 9.0f);
+									temp_comfort_penalty -= 100.0f * ((temp - temp_out - 10.0f) / -9.0f);
 								}
 							}
-						}
 
-						if (temp < 17.0f)
-						{
-							if (temp < 8.0f)
+							temp_comfort += temp_comfort_penalty * temp_comfort_penalty_coeff;
+
+							if (vehicle::colors)
 							{
-								temp_comfort_penalty_coeff = 2.0f;
+								ImVec4 temp_color = { 0, 1, 0, 1 }; // green
+								if (temp_comfort < 50.f)
+								{
+									temp_color = { 1, 0, 0, 1 }; // red
+								}
+								else if (temp_comfort < 100.0f)
+								{
+									temp_color = { 1, 1, 0, 1 }; // yellow
+								}
+
+								ImVec4 brightness_color = { 0, 1, 0, 1 }; // green
+								if (brightness < 50.f)
+								{
+									brightness_color = { 1, 0, 0, 1 }; // red
+								}
+								else if (brightness < 100.0f)
+								{
+									brightness_color = { 1, 1, 0, 1 }; // yellow
+								}
+
+								ImGui::TextColored(temp_color, "In: %.1f C, %.0f%% (Comfort: %.0f%%)", temp, humidity, temp_comfort);
+								ImGui::SameLine();
+								ImGui::Text("%s", inline_separator);
+								ImGui::SameLine();
+								ImGui::TextColored(brightness_color, "Light: %.0f%%", brightness);
 							}
 							else
 							{
-								temp_comfort_penalty_coeff = 1.0f + (temp - 17.0f) / -9.0f;
+								ImGui::Text("In: %.1f C, %.0f%% (Comfort: %.0f%%) %s Light: %.0f%%", temp, humidity, temp_comfort, inline_separator, brightness);
+							}
+						}
+
+						if (vehicle::passengers)
+						{
+							auto seat_array = Read<bool*>(vehicle + 0x6D0);
+							int count = OMSI->BulbToys_ListLength(reinterpret_cast<uintptr_t>(seat_array));
+
+							int taken = 0;
+							for (int i = 0; i < count; i++)
+							{
+								if (seat_array[i]) taken++;
 							}
 
-							if (temp < temp_out + 9.0f)
+							auto first_mmo = Read<uintptr_t>(vehicle + 0x4D0);
+							if (Read<bool>(first_mmo + 0x4E8))
 							{
-								if (temp < temp_out + 5.0f)
+								if (vehicle::colors)
 								{
-									temp_comfort_penalty -= 50.0f;
+									ImGui::Text("Passengers: %d / %d (%d)", taken, count, count - taken);
+									ImGui::SameLine();
+									ImGui::TextColored({ 1, 1, 0, 1 }, "[Stop!]");
 								}
 								else
 								{
-									temp_comfort_penalty -= 50.0f * ((temp - temp_out - 9.0f) / -4.0f);
+									ImGui::Text("Passengers: %d / %d (%d) [Stop]", taken, count, count - taken);
 								}
-							}
-						}
-
-						if (temp < temp_out - 10.0f)
-						{
-							if (temp < temp_out - 19.0f)
-							{
-								temp_comfort_penalty -= 100.0f;
+								Write<bool>(first_mmo + 0x4E8, false); // game apparently does this too lol
 							}
 							else
-							{
-								temp_comfort_penalty -= 100.0f * ((temp - temp_out - 10.0f) / -9.0f);
-							}
-						}
-
-						temp_comfort += temp_comfort_penalty * temp_comfort_penalty_coeff;
-
-						if (vehicle::colors)
-						{
-							ImVec4 temp_color = { 0, 1, 0, 1 }; // green
-							if (temp_comfort < 50.f)
-							{
-								temp_color = { 1, 0, 0, 1 }; // red
-							}
-							else if (temp_comfort < 100.0f)
-							{
-								temp_color = { 1, 1, 0, 1 }; // yellow
-							}
-
-							ImVec4 brightness_color = { 0, 1, 0, 1 }; // green
-							if (brightness < 50.f)
-							{
-								brightness_color = { 1, 0, 0, 1 }; // red
-							}
-							else if (brightness < 100.0f)
-							{
-								brightness_color = { 1, 1, 0, 1 }; // yellow
-							}
-
-							ImGui::TextColored(temp_color, "In: %.1f C, %.0f%% (Comfort: %.0f%%)", temp, humidity, temp_comfort);
-							ImGui::SameLine();
-							ImGui::Text("%s", inline_separator);
-							ImGui::SameLine();
-							ImGui::TextColored(brightness_color, "Light: %.0f%%", brightness);
-						}
-						else
-						{
-							ImGui::Text("In: %.1f C, %.0f%% (Comfort: %.0f%%) %s Light: %.0f%%", temp, humidity, temp_comfort, inline_separator, brightness);
-						}
-					}
-
-					if (vehicle::passengers)
-					{
-						auto seat_array = Read<bool*>(vehicle + 0x6D0);
-						int count = OMSI->BulbToys_ListLength(reinterpret_cast<uintptr_t>(seat_array));
-
-						int taken = 0;
-						for (int i = 0; i < count; i++)
-						{
-							if (seat_array[i]) taken++;
-						}
-
-						auto first_mmo = Read<uintptr_t>(vehicle + 0x4D0);
-						if (Read<bool>(first_mmo + 0x4E8))
-						{
-							if (vehicle::colors)
 							{
 								ImGui::Text("Passengers: %d / %d (%d)", taken, count, count - taken);
-								ImGui::SameLine();
-								ImGui::TextColored({ 1, 1, 0, 1 }, "[Stop!]");
 							}
-							else
-							{
-								ImGui::Text("Passengers: %d / %d (%d) [Stop]", taken, count, count - taken);
-							}
-							Write<bool>(first_mmo + 0x4E8, false); // game apparently does this too lol
+
 						}
-						else
-						{
-							ImGui::Text("Passengers: %d / %d (%d)", taken, count, count - taken);
-						}
-						
+
+						vehicle_iter = Read<uintptr_t>(vehicle + 0x4DC);
 					}
 
 					ImGui::BulbToys_Overlay_EndTable();
